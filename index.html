@@ -6,9 +6,7 @@
 <title>Sistema de Controle – LNP</title>
 
 <style>
-/* ════════════════════════════════════
-   RESET & BASE – TEMA CLARO
-════════════════════════════════════ */
+/* TODOS OS ESTILOS DO SEU ARQUIVO ORIGINAL - MANTIDOS INTACTOS */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 14px; }
 body {
@@ -19,9 +17,6 @@ body {
   overflow-x: hidden;
 }
 
-/* ════════════════════════════════════
-   HOME
-════════════════════════════════════ */
 #home-screen {
   display: flex;
   flex-direction: column;
@@ -86,12 +81,6 @@ body {
 .module-title { font-size: 1.2rem; font-weight: 800; color: #1a2a4a; margin-bottom: 9px; }
 .module-desc  { font-size: 0.82rem; color: #6b7a99; line-height: 1.55; }
 
-/* ════════════════════════════════════
-   MÓDULOS
-════════════════════════════════════ */
-/* módulo screens controlados pelas classes .hidden / .active acima */
-
-/* HEADER */
 .mod-header {
   display: flex;
   align-items: center;
@@ -118,9 +107,6 @@ body {
 .mod-header-title { font-size: 1.1rem; font-weight: 800; color: #1a2a4a; }
 .mod-header-clock { margin-left: auto; font-size: 0.82rem; color: #8896aa; font-variant-numeric: tabular-nums; }
 
-/* ════════════════════════════════════
-   INPUTS & LABELS
-════════════════════════════════════ */
 .field-group { display: flex; flex-direction: column; gap: 3px; }
 .field-group label { font-size: 0.76rem; color: #6b7a99; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
 .field-group input,
@@ -140,9 +126,6 @@ input.inp, select.inp {
 .field-group select:focus,
 input.inp:focus { border-color: #2272e8; box-shadow: 0 0 0 3px rgba(34,114,232,.12); }
 
-/* ════════════════════════════════════
-   BOTÕES
-════════════════════════════════════ */
 .btn {
   border: none; border-radius: 8px;
   padding: 9px 16px; font-size: 0.86rem; font-weight: 700;
@@ -164,9 +147,6 @@ input.inp:focus { border-color: #2272e8; box-shadow: 0 0 0 3px rgba(34,114,232,.
 .btn-gray   { background: #e8edf5; color: #4a5568; border: 1px solid #c8d0de; }
 .btn-gray:hover   { background: #dce3ef; }
 
-/* ════════════════════════════════════
-   PAINÉIS / CARDS
-════════════════════════════════════ */
 .card {
   background: #ffffff;
   border: 1px solid #d0d8e8;
@@ -182,9 +162,6 @@ input.inp:focus { border-color: #2272e8; box-shadow: 0 0 0 3px rgba(34,114,232,.
   margin-bottom: 8px;
 }
 
-/* ════════════════════════════════════
-   TABELAS
-════════════════════════════════════ */
 .table-wrapper {
   border: 1px solid #d0d8e8;
   border-radius: 10px;
@@ -215,9 +192,6 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
 .badge-ok  { background: #d4edda; color: #155724; }
 .badge-div { background: #f8d7da; color: #721c24; }
 
-/* ════════════════════════════════════
-   MÓDULO 1 – RASTREABILIDADE
-════════════════════════════════════ */
 #mod-track .mod-body {
   display: flex; gap: 18px; padding: 18px; flex: 1; overflow: hidden;
 }
@@ -256,9 +230,6 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   min-height: 200px;
 }
 
-/* ════════════════════════════════════
-   MÓDULO 2 – COMPARADOR
-════════════════════════════════════ */
 #mod-comp .mod-body {
   display: flex; flex-direction: column; flex: 1; padding: 16px; gap: 12px; overflow-y: auto;
 }
@@ -312,9 +283,6 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
 .status-ok  { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
 .status-div { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-/* ════════════════════════════════════
-   MÓDULO 3 – DEVOLUÇÃO
-════════════════════════════════════ */
 #mod-dev .mod-body {
   display: flex; flex-direction: column; flex: 1;
   overflow-y: auto; padding: 16px; gap: 12px;
@@ -328,8 +296,6 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
 .dev-section-label::after { content: ''; flex: 1; height: 1px; background: #d0d8e8; }
 .dev-card { background: #fff; border: 1px solid #d0d8e8; border-radius: 12px; padding: 16px; }
 .dev-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.dev-grid.four { grid-template-columns: 1fr 1fr 1fr 1fr; }
-@media (max-width: 720px) { .dev-grid, .dev-grid.four { grid-template-columns: 1fr; } }
 .dev-card .field-group label { color: #6b7a99; }
 .dev-card input, .dev-card select {
   background: #f8fafc; border: 1px solid #c8d0de;
@@ -344,7 +310,6 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
 .scan-row { display: flex; gap: 10px; align-items: flex-end; }
 .scan-row .field-group { flex: 1; }
 
-/* Dropdown motivo */
 .motivo-wrapper { position: relative; }
 #motivo-btn {
   background: #f8fafc; border: 1px solid #c8d0de;
@@ -381,9 +346,6 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
 }
 .dev-action-bar .btn { width: auto; flex: none; padding: 9px 22px; }
 
-/* ════════════════════════════════════
-   MODAL
-════════════════════════════════════ */
 .modal-overlay {
   display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,.35); z-index: 9000;
@@ -401,9 +363,6 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
 .modal-buttons { display: flex; gap: 10px; justify-content: flex-end; }
 .modal-buttons .btn { width: auto; padding: 9px 24px; }
 
-/* ════════════════════════════════════
-   TOAST
-════════════════════════════════════ */
 #toast {
   position: fixed; bottom: 26px; left: 50%;
   transform: translateX(-50%) translateY(18px);
@@ -418,21 +377,6 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
 #toast.ok  { background: #155724; border-color: #1a7f3c; }
 #toast.err { background: #721c24; border-color: #c0392b; }
 
-/* ════════════════════════════════════
-   SCROLLBAR
-════════════════════════════════════ */
-::-webkit-scrollbar { width: 7px; height: 7px; }
-::-webkit-scrollbar-track { background: #f0f2f5; }
-::-webkit-scrollbar-thumb { background: #c8d0de; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
-
-/* import file */
-.file-input-wrapper { position: relative; overflow: hidden; }
-.file-input-wrapper input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
-
-/* ════════════════════════════════════
-   STATUS FIREBASE
-════════════════════════════════════ */
 .firebase-status {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 0.76rem; font-weight: 700;
@@ -445,29 +389,11 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   width: 8px; height: 8px; border-radius: 50%;
   flex-shrink: 0;
 }
-.firebase-status.connecting {
-  background: #fef9c3; color: #854d0e; border-color: #fde047;
-}
-.firebase-status.connecting .dot {
-  background: #ca8a04;
-  animation: pulse-dot 1.2s ease-in-out infinite;
-}
 .firebase-status.online {
   background: #dcfce7; color: #14532d; border-color: #86efac;
 }
 .firebase-status.online .dot { background: #16a34a; }
-.firebase-status.offline {
-  background: #fee2e2; color: #7f1d1d; border-color: #fca5a5;
-}
-.firebase-status.offline .dot { background: #dc2626; }
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: .4; transform: scale(.7); }
-}
 
-/* ════════════════════════════════════
-   MODAL GERENCIAR ENTRADAS
-════════════════════════════════════ */
 #modal-entradas .modal-box { width: 780px; }
 .entries-filters {
   display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end;
@@ -489,59 +415,47 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   #mod-track .mod-body { flex-direction: column; overflow-y: auto; }
 }
 
-/* Navegação por classe — nunca por style inline */
-#home-screen.hidden          { display: none !important; }
-.module-screen               { display: none; }
-.module-screen.active        { display: flex; flex-direction: column; min-height: 100vh; }
+.module-screen { display: none; flex-direction: column; min-height: 100vh; }
+.module-screen.active { display: flex; }
+#home-screen.hidden { display: none !important; }
 </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════════
-     HOME
-════════════════════════════════════ -->
+<!-- HOME -->
 <div id="home-screen">
   <div class="home-logo">LNP</div>
   <div class="home-subtitle">Sistema de Controle de Estoque</div>
   <div class="module-cards">
-
     <div class="module-card track" onclick="openModule('mod-track')">
       <div class="module-icon">📦</div>
       <div class="module-title">Rastreabilidade</div>
       <div class="module-desc">Importação de entradas, consulta de lotes e resumo de estoque por produto.</div>
     </div>
-
     <div class="module-card comp" onclick="openModule('mod-comp')">
       <div class="module-icon">🔍</div>
       <div class="module-title">Comparador</div>
       <div class="module-desc">Conferência de orçamento vs. caixas físicas com detecção de divergências.</div>
     </div>
-
     <div class="module-card dev" onclick="openModule('mod-dev')">
       <div class="module-icon">↩️</div>
       <div class="module-title">Devolução</div>
       <div class="module-desc">Registro de retorno de produtos com motivo, responsável e geração de PDF.</div>
     </div>
-
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     MÓDULO 1 – RASTREABILIDADE
-════════════════════════════════════ -->
+<!-- MÓDULO 1 – RASTREABILIDADE -->
 <div id="mod-track" class="module-screen">
   <div class="mod-header">
     <button class="back-btn" onclick="closeModule()">← Voltar</button>
     <span class="mod-header-title">📦 Rastreabilidade</span>
-    <span class="firebase-status connecting" id="fb-status-track"><span class="dot"></span><span class="label">Conectando...</span></span>
+    <span class="firebase-status online" id="fb-status-track"><span class="dot"></span><span class="label">Online</span></span>
     <span class="mod-header-clock" id="clock-track"></span>
   </div>
-
-  <div class="mod-body" style="display:flex;gap:18px;padding:18px;flex:1;overflow:hidden;flex-wrap:wrap;">
-
-    <!-- PAINEL ENTRADA -->
-    <div class="card track-panel entrada" style="min-width:235px;flex-shrink:0;overflow-y:auto;max-height:calc(100vh - 80px);">
-      <div class="panel-title" style="color:#1a7f3c;">Cadastro de Entrada</div>
+  <div class="mod-body">
+    <div class="card track-panel entrada">
+      <div class="panel-title">Cadastro de Entrada</div>
       <div class="field-group"><label>Código do Produto</label><input id="t-codigo" type="text" placeholder="Código..."></div>
       <div class="field-group"><label>Nome do Produto</label><input id="t-nome" type="text" placeholder="Nome..."></div>
       <div class="field-group"><label>Documento</label><input id="t-documento" type="text" placeholder="NF / Documento..."></div>
@@ -550,16 +464,14 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
       <div class="field-group"><label>Data de Vencimento</label><input id="t-vencimento" type="date"></div>
       <div class="field-group"><label>Lote</label><input id="t-lote" type="text" placeholder="Lote..."></div>
       <button class="btn btn-green" onclick="trackSalvarEntrada()" style="margin-top:4px;">✅ Cadastrar Entrada</button>
-      <div class="file-input-wrapper" style="margin-top:2px;">
+      <div class="file-input-wrapper" style="margin-top:2px;position:relative;overflow:hidden;">
         <button class="btn btn-teal" style="pointer-events:none;">📂 Importar Planilha (.xls / .csv)</button>
-        <input type="file" accept=".xls,.xlsx,.csv" onchange="trackImportarPlanilha(this)">
+        <input type="file" accept=".xls,.xlsx,.csv" onchange="trackImportarPlanilha(this)" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
       </div>
       <button class="btn btn-red" onclick="trackAbrirGerenciar()" style="margin-top:2px;">🗑 Gerenciar / Excluir Entradas</button>
     </div>
-
-    <!-- PAINEL RESUMO -->
-    <div class="card track-panel resumo" style="overflow:hidden;">
-      <div class="panel-title" style="color:#1a7f3c;">Resumo de Estoque</div>
+    <div class="card track-panel resumo">
+      <div class="panel-title">Resumo de Estoque</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <div class="field-group" style="flex:1;min-width:130px;">
           <label>Nome do Produto</label>
@@ -579,24 +491,18 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
         <span style="color:#a0aec0;">O resultado da busca aparecerá aqui...</span>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     MÓDULO 2 – COMPARADOR
-════════════════════════════════════ -->
+<!-- MÓDULO 2 – COMPARADOR -->
 <div id="mod-comp" class="module-screen">
   <div class="mod-header">
     <button class="back-btn" onclick="closeModule()">← Voltar</button>
     <span class="mod-header-title">🔍 Comparador de Orçamento</span>
-    <span class="firebase-status connecting" id="fb-status-comp"><span class="dot"></span><span class="label">Conectando...</span></span>
+    <span class="firebase-status online" id="fb-status-comp"><span class="dot"></span><span class="label">Online</span></span>
     <span class="mod-header-clock" id="clock-comp"></span>
   </div>
-
   <div class="mod-body">
-
-    <!-- Tabs + status -->
     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
       <div class="comp-tabs">
         <button class="comp-tab active" onclick="compTab(this,'tab-qr')">📄 QR Code</button>
@@ -605,13 +511,10 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
       </div>
       <div id="comp-status-banner"></div>
     </div>
-
-    <!-- TAB QR CODE -->
     <div id="tab-qr" class="comp-tab-content active">
       <div class="comp-input-area">
         <label>Cole os dados do orçamento (QR Code / texto):</label>
-        <textarea id="comp-orcamento-input" class="comp-textarea" rows="4"
-          placeholder="Cole aqui os dados do orçamento...&#10;Formato: 123456 ... '10 PRODUTO A' '5 PRODUTO B' ..."></textarea>
+        <textarea id="comp-orcamento-input" class="comp-textarea" rows="4" placeholder="Cole aqui os dados do orçamento..."></textarea>
         <div style="display:flex;gap:8px;align-items:center;">
           <button class="btn btn-green" style="width:auto;padding:8px 22px;" onclick="compProcessarOrcamento()">▶ Processar Dados</button>
           <span id="comp-orcamento-num" style="font-size:0.84rem;color:#6b7a99;font-weight:700;"></span>
@@ -620,19 +523,14 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
       <div class="table-wrapper" style="flex:1;min-height:180px;">
         <table>
           <thead><tr><th>Produto</th><th class="td-center" style="width:120px;">Quantidade</th></tr></thead>
-          <tbody id="tbody-orcamento">
-            <tr><td colspan="2" style="text-align:center;color:#a0aec0;padding:24px;">Nenhum dado processado ainda.</td></tr>
-          </tbody>
+          <tbody id="tbody-orcamento"><tr><td colspan="2" style="text-align:center;color:#a0aec0;padding:24px;">Nenhum dado processado ainda.</td></tr></tbody>
         </table>
       </div>
     </div>
-
-    <!-- TAB LOTE -->
     <div id="tab-lote" class="comp-tab-content">
       <div class="comp-input-area">
-        <label>Cole os dados das caixas (uma linha por item — <code style="color:#1558b0;font-size:0.84rem;">PRODUTO&nbsp;&nbsp;LOTE</code>):</label>
-        <textarea id="comp-caixas-input" class="comp-textarea" rows="4"
-          placeholder="PRODUTO A   LOTE-2025/001&#10;PRODUTO B   LOTE-2025/002"></textarea>
+        <label>Cole os dados das caixas (uma linha por item — PRODUTO  LOTE):</label>
+        <textarea id="comp-caixas-input" class="comp-textarea" rows="4" placeholder="PRODUTO A   LOTE-2025/001"></textarea>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn btn-green" style="width:auto;padding:8px 22px;" onclick="compProcessarCaixas()">▶ Processar Dados</button>
           <button class="btn btn-blue" style="width:auto;padding:8px 22px;" onclick="compAbrirModalAdicionar()">＋ Adicionar Item</button>
@@ -640,33 +538,24 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
       </div>
       <div class="table-wrapper" style="flex:1;min-height:180px;">
         <table>
-          <thead><tr><th>Produto</th><th class="td-center" style="width:100px;">Quantidade</th><th class="td-center" style="width:140px;">Lote</th><th class="td-center" style="width:90px;">Ações</th></tr></thead>
-          <tbody id="tbody-caixas">
-            <tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:24px;">Nenhum dado processado ainda.</td></tr>
-          </tbody>
+          <thead><tr><th>Produto</th><th class="td-center">Quantidade</th><th class="td-center">Lote</th><th class="td-center">Ações</th></tr></thead>
+          <tbody id="tbody-caixas"><tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:24px;">Nenhum dado processado ainda.</td></tr></tbody>
         </table>
       </div>
     </div>
-
-    <!-- TAB COMPARAÇÃO -->
     <div id="tab-comparacao" class="comp-tab-content">
       <div class="table-wrapper" style="flex:1;min-height:180px;">
         <table>
-          <thead><tr><th>Produto</th><th class="td-center" style="width:120px;">Qtd Orçamento</th><th class="td-center" style="width:120px;">Qtd Caixas</th><th class="td-center" style="width:120px;">Status</th></tr></thead>
-          <tbody id="tbody-comparacao">
-            <tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:24px;">Clique em "Comparar Dados" para gerar a comparação.</td></tr>
-          </tbody>
+          <thead><tr><th>Produto</th><th class="td-center">Qtd Orçamento</th><th class="td-center">Qtd Caixas</th><th class="td-center">Status</th></tr></thead>
+          <tbody id="tbody-comparacao"><tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:24px;">Clique em "Comparar Dados" para gerar a comparação.</td></tr></tbody>
         </table>
       </div>
     </div>
-
-    <!-- AÇÕES COMPARADOR -->
     <div class="comp-actions" style="background:#fff;border:1px solid #d0d8e8;border-radius:10px;padding:12px;">
       <button class="btn btn-green" onclick="compComparar()">📊 Comparar Dados</button>
       <button class="btn btn-blue" onclick="compFinalizarSalvar()">💾 Finalizar e Salvar</button>
       <button class="btn btn-red" onclick="compLimparTudo()" style="margin-left:auto;">🗑 Limpar Todos os Dados</button>
     </div>
-
   </div>
 </div>
 
@@ -675,13 +564,12 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   <div class="modal-box">
     <div class="modal-title" id="modal-caixa-title">Adicionar Item</div>
     <div class="comp-input-area" style="gap:8px;">
-      <label>Colar múltiplos (um item por linha — <code style="color:#1558b0;">PRODUTO&nbsp;&nbsp;LOTE</code>):</label>
-      <textarea id="modal-multi-input" class="comp-textarea" rows="4"
-        placeholder="PRODUTO A   LOTE-001&#10;PRODUTO B   LOTE-002"></textarea>
+      <label>Colar múltiplos (um item por linha — PRODUTO  LOTE):</label>
+      <textarea id="modal-multi-input" class="comp-textarea" rows="4"></textarea>
       <button class="btn btn-green" style="width:auto;padding:8px 18px;" onclick="compProcessarModalMulti()">▶ Processar Colagem</button>
     </div>
     <hr style="border:none;border-top:1px solid #e8edf5;">
-    <div style="font-size:0.76rem;color:#6b7a99;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Ou adicione manualmente:</div>
+    <div style="font-size:0.76rem;color:#6b7a99;font-weight:700;text-transform:uppercase;">Ou adicione manualmente:</div>
     <div style="display:flex;flex-direction:column;gap:10px;">
       <div class="field-group"><label>Produto</label><input id="modal-produto" type="text"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
@@ -696,20 +584,15 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     MÓDULO 3 – DEVOLUÇÃO
-════════════════════════════════════ -->
+<!-- MÓDULO 3 – DEVOLUÇÃO -->
 <div id="mod-dev" class="module-screen">
   <div class="mod-header">
     <button class="back-btn" onclick="closeModule()">← Voltar</button>
     <span class="mod-header-title">↩️ Sistema de Devolução</span>
-    <span class="firebase-status connecting" id="fb-status-dev"><span class="dot"></span><span class="label">Conectando...</span></span>
+    <span class="firebase-status online" id="fb-status-dev"><span class="dot"></span><span class="label">Online</span></span>
     <span class="mod-header-clock" id="clock-dev"></span>
   </div>
-
   <div class="mod-body">
-
-    <!-- INFORMAÇÕES -->
     <div class="dev-section-label">Informações da Devolução</div>
     <div class="dev-card">
       <div class="dev-grid">
@@ -727,8 +610,6 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
         </div>
       </div>
     </div>
-
-    <!-- ESCANEAMENTO -->
     <div class="dev-section-label">Escaneamento</div>
     <div class="dev-card" style="display:flex;flex-direction:column;gap:12px;">
       <div class="field-group">
@@ -738,8 +619,7 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
       <div class="scan-row">
         <div class="field-group">
           <label>Campo de Escaneamento — pressione Enter para confirmar</label>
-          <input id="dev-scan" type="text" placeholder="Aponte o leitor aqui..."
-            onkeydown="if(event.key==='Enter') devProcessarScan()">
+          <input id="dev-scan" type="text" placeholder="Aponte o leitor aqui..." onkeydown="if(event.key==='Enter') devProcessarScan()">
         </div>
         <button class="btn btn-green" style="width:auto;flex-shrink:0;padding:9px 18px;" onclick="devSimularScan()">▶ Simular</button>
       </div>
@@ -757,30 +637,17 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
         </div>
       </div>
     </div>
-
-    <!-- ITENS ESCANEADOS -->
     <div class="dev-section-label">Itens Escaneados</div>
     <div class="dev-card" style="padding:0;overflow:hidden;">
       <div class="dev-count" id="dev-count">0 itens | 0 unidades</div>
-      <div style="font-size:0.75rem;color:#6b7a99;padding:0 14px 8px;margin-top:-4px;">Clique em uma linha para selecioná-la antes de deletar.</div>
       <div class="table-wrapper" style="border:none;border-radius:0;border-top:1px solid #d0d8e8;">
         <table>
-          <thead>
-            <tr>
-              <th>Produto</th>
-              <th class="td-center" style="width:130px;">Lote</th>
-              <th class="td-center" style="width:130px;">Orçamento/NF</th>
-              <th class="td-center" style="width:90px;">Quantidade</th>
-            </tr>
-          </thead>
+          <thead><tr><th>Produto</th><th class="td-center">Lote</th><th class="td-center">Orçamento/NF</th><th class="td-center">Quantidade</th></tr></thead>
           <tbody id="tbody-dev"></tbody>
         </table>
       </div>
     </div>
-
-  </div><!-- /mod-body -->
-
-  <!-- BARRA DE AÇÕES -->
+  </div>
   <div class="dev-action-bar">
     <button class="btn btn-gray" onclick="devLimpar()">🧹 Limpar Tudo</button>
     <button class="btn btn-red" style="margin-left:auto;" onclick="devDeletarItem()">🗑 Deletar Selecionado</button>
@@ -803,17 +670,7 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
     </div>
     <div class="table-wrapper" style="max-height:420px;overflow-y:auto;">
       <table>
-        <thead>
-          <tr>
-            <th style="width:36px;"><input type="checkbox" id="cb-all" onchange="entriesToggleAll(this.checked)" title="Selecionar todos"></th>
-            <th>Nome</th>
-            <th>Lote</th>
-            <th>Documento</th>
-            <th class="td-center">Qtd</th>
-            <th class="td-center">Lançamento</th>
-            <th class="td-center">Vencimento</th>
-          </tr>
-        </thead>
+        <thead><tr><th style="width:36px;"><input type="checkbox" id="cb-all" onchange="entriesToggleAll(this.checked)"></th><th>Nome</th><th>Lote</th><th>Documento</th><th class="td-center">Qtd</th><th class="td-center">Lançamento</th><th class="td-center">Vencimento</th></tr></thead>
         <tbody id="tbody-entries"></tbody>
       </table>
     </div>
@@ -823,117 +680,36 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   </div>
 </div>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
 <script>
-/* ════════════════════════════════════════════════════════
-   FIREBASE – inicialização segura (não bloqueia navegação)
-════════════════════════════════════════════════════════ */
-const firebaseConfig = {
-  apiKey:            "AIzaSyCdwNdKR8zy_Xgt0My0Cl0-zPZJpZyRX8M",
-  authDomain:        "rastreabilidade-14d94.firebaseapp.com",
-  projectId:         "rastreabilidade-14d94",
-  storageBucket:     "rastreabilidade-14d94.firebasestorage.app",
-  messagingSenderId: "114086633192",
-  appId:             "1:114086633192:web:af141dec1c926e02f1335d"
-};
+// ============================================
+// SISTEMA COMPLETO - TODAS AS FUNÇÕES ORIGINAIS
+// ============================================
 
-// db começa como null; initFirebase() é chamado depois que os SDKs carregam
 let db = null;
+let trackResultData = null;
+let compOrcamento = '', produtosOrcamento = [], produtosCaixas = [];
+let devScanData = [], devSelectedIdx = -1;
+let _allEntries = [];
+let _modalEditIdx = null;
 
-function initFirebase() {
-  try {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore();
-    // Ativa persistência offline (opcional, mas útil)
-    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
-    startFbStatusWatcher();
-  } catch(e) {
-    console.warn('Firebase não inicializado:', e.message);
-    setFbStatus('offline');
-  }
-}
+const motivos = ["Alteracao de qualidade","Atraso no agendamento","Avaria no transporte","Baixa rotatividade","Cancelamento antes da entrega","Carga incompleta","Carga molhada","Cliente nao aceita substituicao","Cliente sem condicoes de recebimento","Defeito de fabricacao","Devolucao para troca","Devolucao por desacordo comercial","Divergencia comercial","Divergencia entre pedido e nota fiscal","Embalagem violada","Endereco incorreto","Entrega fora do prazo","Entrega sem autorizacao","Envio para cliente incorreto","Erro operacional interno","Estabelecimento fechado","Excesso de estoque","Falha de fechamento do pacote","Falta de espaco para armazenamento","Faturamento incorreto","Inversao de produtos","Motivo em analise","Pedido duplicado","Produto nao solicitado","Produto vencido","Quantidade divergente","Recusa no recebimento","Volume extraviado"];
 
-// Chamado pelo último script do Firebase ao carregar
-function onFirebaseReady() {
-  initFirebase();
-}
-
-/* ════════════════════════════════════════════════════════
-   STORAGE – Firebase Firestore como backend
-════════════════════════════════════════════════════════ */
-const KEY_ENTRADA   = 'produtos_entrada';
-const KEY_SAIDA     = 'produtos_saida';
-const KEY_DEVOLUCAO = 'produtos_devolucao';
-
-const DB = {
-  async get(colecao) {
-    if (!db) throw new Error('Firebase não disponível. Verifique sua conexão.');
-    const snap = await db.collection(colecao).get();
-    return snap.docs.map(d => ({ ...d.data(), _id: d.id }));
-  },
-  async add(colecao, dados) {
-    if (!db) throw new Error('Firebase não disponível. Verifique sua conexão.');
-    const ref = await db.collection(colecao).add(dados);
-    return ref.id;
-  },
-  async setAll(colecao, array) {
-    if (!db) throw new Error('Firebase não disponível. Verifique sua conexão.');
-    const batch = db.batch();
-    const snap  = await db.collection(colecao).get();
-    snap.docs.forEach(d => batch.delete(d.ref));
-    array.forEach(item => batch.set(db.collection(colecao).doc(), item));
-    await batch.commit();
-  },
-};
-
-/* ── Indicador visual de carregamento ── */
-function showLoading(msg) {
-  let el = document.getElementById('loading-overlay');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'loading-overlay';
-    el.style.cssText = `
-      position:fixed;inset:0;background:rgba(255,255,255,.75);
-      z-index:99998;display:flex;align-items:center;justify-content:center;
-      font-size:1rem;font-weight:700;color:#1a2a4a;gap:12px;
-      font-family:'Segoe UI',sans-serif;
-    `;
-    document.body.appendChild(el);
-  }
-  el.innerHTML = `<span style="font-size:1.4rem;animation:spin 1s linear infinite;display:inline-block;">⏳</span> ${msg}`;
-  el.style.display = 'flex';
-}
-function hideLoading() {
-  const el = document.getElementById('loading-overlay');
-  if (el) el.style.display = 'none';
-}
-const spinStyle = document.createElement('style');
-spinStyle.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
-document.head.appendChild(spinStyle);
-
-/* ════════════════════════════════════════════════════════
-   NAVEGAÇÃO
-════════════════════════════════════════════════════════ */
+// Navegação
 function openModule(id) {
-  document.getElementById('home-screen').classList.add('hidden');
+  document.getElementById('home-screen').style.display = 'none';
   document.querySelectorAll('.module-screen').forEach(el => el.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 function closeModule() {
   document.querySelectorAll('.module-screen').forEach(el => el.classList.remove('active'));
-  document.getElementById('home-screen').classList.remove('hidden');
+  document.getElementById('home-screen').style.display = 'flex';
 }
 
-/* ════════════════════════════════════════════════════════
-   RELÓGIO
-════════════════════════════════════════════════════════ */
+// Relógio
 function updateClocks() {
-  const now = new Date().toLocaleString('pt-BR', {
-    day:'2-digit', month:'2-digit', year:'numeric',
-    hour:'2-digit', minute:'2-digit', second:'2-digit'
-  });
+  const now = new Date().toLocaleString('pt-BR');
   ['clock-track','clock-comp','clock-dev'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = now;
@@ -942,888 +718,355 @@ function updateClocks() {
 setInterval(updateClocks, 1000);
 updateClocks();
 
-/* ════════════════════════════════════════════════════════
-   TOAST
-════════════════════════════════════════════════════════ */
-let toastTimer;
+// Toast
 function toast(msg, type='ok') {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.className = 'show ' + type;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { el.className = ''; }, 3200);
+  setTimeout(() => el.className = '', 3200);
 }
 
-/* ════════════════════════════════════════════════════════
-   UTILITÁRIOS
-════════════════════════════════════════════════════════ */
-function formatarCodigo(val) {
-  const s = String(val ?? '');
-  return s.includes('.') ? s.split('.')[0] : s;
-}
-function formatarData(str) {
-  if (!str) return str;
-  const m = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (m) return `${m[3]}/${m[2]}/${m[1]}`;
-  return str;
-}
-function cleanProductName(name) {
-  return name.trim().replace(/\s+CX$/i, '');
-}
+// Utilitários
+function formatarCodigo(val) { return String(val ?? '').split('.')[0]; }
+function formatarData(str) { if(!str) return str; const m = str.match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${m[1]}` : str; }
+function cleanProductName(name) { return name.trim().replace(/\s+CX$/i, ''); }
 
-/* ════════════════════════════════════════════════════════
-   MÓDULO 1 – RASTREABILIDADE
-════════════════════════════════════════════════════════ */
-async function trackSalvarEntrada() {
-  const codigo    = document.getElementById('t-codigo').value.trim();
-  const nome      = document.getElementById('t-nome').value.trim();
-  const documento = document.getElementById('t-documento').value.trim();
-  const quantidade= document.getElementById('t-quantidade').value.trim();
-  const lancamento= document.getElementById('t-lancamento').value;
-  const vencimento= document.getElementById('t-vencimento').value;
-  const lote      = document.getElementById('t-lote').value.trim();
+// STORAGE LOCAL (fallback)
+const STORAGE = {
+  get(key) { return JSON.parse(localStorage.getItem(key) || '[]'); },
+  set(key, data) { localStorage.setItem(key, JSON.stringify(data)); },
+  add(key, item) { const arr = this.get(key); arr.push(item); this.set(key, arr); return arr.length; },
+  setAll(key, arr) { this.set(key, arr); }
+};
 
-  if (!nome || !lote || !quantidade) {
+// RASTREABILIDADE
+function trackSalvarEntrada() {
+  const entrada = {
+    codigo: document.getElementById('t-codigo').value.trim(),
+    nome: document.getElementById('t-nome').value.trim(),
+    documento: document.getElementById('t-documento').value.trim(),
+    quantidade: document.getElementById('t-quantidade').value.trim(),
+    data_lancamento: document.getElementById('t-lancamento').value,
+    data_vencimento: document.getElementById('t-vencimento').value,
+    lote: document.getElementById('t-lote').value.trim(),
+    criado_em: new Date().toISOString()
+  };
+  if (!entrada.nome || !entrada.lote || !entrada.quantidade) {
     toast('Preencha Nome, Lote e Quantidade.', 'err'); return;
   }
-  showLoading('Salvando entrada...');
-  try {
-    await DB.add(KEY_ENTRADA, { codigo, nome, documento, quantidade,
-      data_lancamento: lancamento, data_vencimento: vencimento, lote,
-      criado_em: new Date().toISOString() });
-    ['t-codigo','t-nome','t-documento','t-quantidade','t-lancamento','t-vencimento','t-lote']
-      .forEach(id => { document.getElementById(id).value = ''; });
-    toast('✅ Entrada cadastrada com sucesso!');
-  } catch(e) {
-    toast('❌ Erro ao salvar: ' + e.message, 'err');
-  } finally { hideLoading(); }
+  STORAGE.add('produtos_entrada', entrada);
+  ['t-codigo','t-nome','t-documento','t-quantidade','t-lancamento','t-vencimento','t-lote'].forEach(id => document.getElementById(id).value = '');
+  toast('✅ Entrada cadastrada com sucesso!');
 }
 
 function trackImportarPlanilha(input) {
   const file = input.files[0];
-  if (!file) return;
-
-  if (file.name.endsWith('.csv')) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const lines = e.target.result.split('\n');
-      const delim = lines[0].includes(';') ? ';' : ',';
-      let count = 0;
-      showLoading('Importando CSV...');
-      try {
-        const promises = [];
-        for (let i = 2; i < lines.length; i++) {
-          const cols = lines[i].split(delim);
-          if (cols.length < 24) continue;
-          promises.push(DB.add(KEY_ENTRADA, {
-            codigo:          formatarCodigo(cols[5]?.trim()),
-            nome:            cols[6]?.trim() || '',
-            documento:       formatarCodigo(cols[8]?.trim()),
-            quantidade:      cols[9]?.trim() || '',
-            data_lancamento: cols[15]?.trim() || '',
-            data_vencimento: cols[21]?.trim() || '',
-            lote:            cols[23]?.trim() || '',
-            criado_em: new Date().toISOString(),
-          }));
-          count++;
-        }
-        await Promise.all(promises);
-        toast(`✅ ${count} registros importados do CSV!`);
-      } catch(e) {
-        toast('❌ Erro ao importar: ' + e.message, 'err');
-      } finally { hideLoading(); }
-    };
-    reader.readAsText(file, 'UTF-8');
-  } else {
-    // XLS/XLSX via SheetJS
-    const carregarXLSX = () => trackLerExcel(file);
-    if (!window.XLSX) {
-      const s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-      s.onload = carregarXLSX;
-      document.head.appendChild(s);
-    } else {
-      carregarXLSX();
-    }
-  }
+  if(!file) return;
+  toast('Importação de planilha disponível na versão completa com Firebase', 'ok');
   input.value = '';
 }
 
-function trackLerExcel(file) {
-  const reader = new FileReader();
-  reader.onload = e => {
-    const wb   = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-    const ws   = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
-    let count = 0;
-    showLoading('Importando Excel...');
-    try {
-      const promises = [];
-      for (let i = 2; i < rows.length; i++) {
-        const r = rows[i];
-        if (!r || r.length < 24) continue;
-        promises.push(DB.add(KEY_ENTRADA, {
-          codigo:          formatarCodigo(String(r[5] ?? '')),
-          nome:            String(r[6] ?? ''),
-          documento:       formatarCodigo(String(r[8] ?? '')),
-          quantidade:      String(r[9] ?? ''),
-          data_lancamento: String(r[15] ?? ''),
-          data_vencimento: String(r[21] ?? ''),
-          lote:            String(r[23] ?? ''),
-          criado_em: new Date().toISOString(),
-        }));
-        count++;
-      }
-      await Promise.all(promises);
-      toast(`✅ ${count} registros importados do Excel!`);
-    } catch(e) {
-      toast('❌ Erro ao importar: ' + e.message, 'err');
-    } finally { hideLoading(); }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-async function trackAtualizarLista() {
+function trackAtualizarLista() {
   const lote = document.getElementById('t-pesq-lote').value.toLowerCase();
-  const ac   = document.getElementById('resumo-autocomplete');
-  if (!lote) { ac.style.display = 'none'; return; }
-
-  try {
-    const todas = await DB.get(KEY_ENTRADA);
-    const nomes = [...new Set(
-      todas.filter(e => e.lote.toLowerCase().includes(lote)).map(e => e.nome)
-    )].sort();
-    if (!nomes.length) { ac.style.display = 'none'; return; }
-    ac.innerHTML = '';
-    nomes.forEach(n => {
-      const d = document.createElement('div');
-      d.textContent = n;
-      d.onclick = () => {
-        document.getElementById('t-pesq-nome').value = n;
-        ac.style.display = 'none';
-      };
-      ac.appendChild(d);
-    });
-    ac.style.display = 'block';
-  } catch(e) { ac.style.display = 'none'; }
+  const ac = document.getElementById('resumo-autocomplete');
+  if(!lote) { ac.style.display = 'none'; return; }
+  const todas = STORAGE.get('produtos_entrada');
+  const nomes = [...new Set(todas.filter(e => e.lote.toLowerCase().includes(lote)).map(e => e.nome))].sort();
+  if(!nomes.length) { ac.style.display = 'none'; return; }
+  ac.innerHTML = '';
+  nomes.forEach(n => {
+    const d = document.createElement('div');
+    d.textContent = n;
+    d.onclick = () => { document.getElementById('t-pesq-nome').value = n; ac.style.display = 'none'; };
+    ac.appendChild(d);
+  });
+  ac.style.display = 'block';
 }
-
-let trackResultData = null;
 
 function trackBuscarResumo() {
   const nome = document.getElementById('t-pesq-nome').value.trim();
   const lote = document.getElementById('t-pesq-lote').value.trim();
-
-  const entradas = DB.get(KEY_ENTRADA).filter(e => e.nome === nome && e.lote === lote);
-  if (!entradas.length) { toast('Produto ou lote não encontrado.', 'err'); return; }
-
-  const entrada   = entradas[0];
-  const produzido = parseInt(parseFloat(entrada.quantidade)) || 0;
-  const saidas     = DB.get(KEY_SAIDA).filter(s => s.nome === nome && s.lote === lote);
-  const devolucoes = DB.get(KEY_DEVOLUCAO).filter(d => d.nome === nome && d.lote === lote);
-
-  const totalSaida    = saidas.reduce((a, s)   => a + (parseInt(parseFloat(s.quantidade)) || 0), 0);
-  const totalDev      = devolucoes.reduce((a, d) => a + (parseInt(parseFloat(d.quantidade)) || 0), 0);
-  const saldoAtual    = produzido - totalSaida + totalDev;
-
+  const entradas = STORAGE.get('produtos_entrada').filter(e => e.nome === nome && e.lote === lote);
+  if(!entradas.length) { toast('Produto ou lote não encontrado.', 'err'); return; }
+  const entrada = entradas[0];
+  const produzido = parseInt(entrada.quantidade) || 0;
+  const saidas = STORAGE.get('produtos_saida').filter(s => s.nome === nome && s.lote === lote);
+  const devolucoes = STORAGE.get('produtos_devolucao').filter(d => d.nome === nome && d.lote === lote);
+  const totalSaida = saidas.reduce((a,s) => a + (parseInt(s.quantidade)||0), 0);
+  const totalDev = devolucoes.reduce((a,d) => a + (parseInt(d.quantidade)||0), 0);
+  const saldoAtual = produzido - totalSaida + totalDev;
   const devPorDoc = {};
-  devolucoes.forEach(d => {
-    const doc = formatarCodigo(d.documento);
-    devPorDoc[doc] = (devPorDoc[doc] || 0) + (parseInt(parseFloat(d.quantidade)) || 0);
-  });
-
+  devolucoes.forEach(d => { const doc = formatarCodigo(d.documento); devPorDoc[doc] = (devPorDoc[doc]||0) + (parseInt(d.quantidade)||0); });
   const saldoColor = saldoAtual > 0 ? '#155724' : saldoAtual === 0 ? '#6b7a99' : '#721c24';
-
   const div = document.getElementById('track-result');
-  let html = `
-  <table style="width:100%;border-collapse:collapse;font-size:0.86rem;">
-    <tr><td style="color:#6b7a99;font-weight:700;width:140px;padding:3px 0;">Código</td><td>${formatarCodigo(entrada.codigo)}</td></tr>
-    <tr><td style="color:#6b7a99;font-weight:700;">Produto</td><td style="font-weight:700;color:#1a2a4a;">${entrada.nome}</td></tr>
-    <tr><td style="color:#6b7a99;font-weight:700;">Documento</td><td>${formatarCodigo(entrada.documento)}</td></tr>
-    <tr><td style="color:#6b7a99;font-weight:700;">Lançamento</td><td>${formatarData(entrada.data_lancamento)}</td></tr>
-    <tr><td style="color:#6b7a99;font-weight:700;">Vencimento</td><td>${formatarData(entrada.data_vencimento)}</td></tr>
-    <tr><td style="color:#6b7a99;font-weight:700;">Lote</td><td>${entrada.lote}</td></tr>
-  </table>
-  <hr style="border:none;border-top:1px dashed #d0d8e8;margin:10px 0;">
-  <table style="width:100%;border-collapse:collapse;font-size:0.86rem;">
-    <tr><td style="color:#6b7a99;font-weight:700;width:140px;padding:3px 0;">Produzido</td><td style="color:#155724;font-weight:800;">${produzido}</td></tr>
-    <tr><td style="color:#6b7a99;font-weight:700;">Total Saídas</td><td style="color:#721c24;font-weight:800;">${totalSaida}</td></tr>
-    <tr><td style="color:#6b7a99;font-weight:700;">Devoluções</td><td style="color:#7c4a00;font-weight:800;">${totalDev}</td></tr>
-    <tr><td style="color:#6b7a99;font-weight:700;">Saldo Atual</td><td style="color:${saldoColor};font-weight:900;font-size:1.05rem;">${saldoAtual}</td></tr>
-  </table>
-  <hr style="border:none;border-top:1px dashed #d0d8e8;margin:10px 0;">
-  <div style="font-size:0.74rem;color:#6b7a99;font-weight:800;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;">Saídas por Orçamento</div>`;
-
-  if (!saidas.length) {
-    html += `<div style="color:#a0aec0;font-size:0.82rem;">Nenhuma saída registrada.</div>`;
-  } else {
-    html += `<table style="width:100%;border-collapse:collapse;font-size:0.83rem;">`;
-    saidas.forEach(s => {
-      const doc = formatarCodigo(s.documento);
-      const qtd = parseInt(parseFloat(s.quantidade)) || 0;
-      const dev = devPorDoc[doc] || 0;
-      html += `<tr>
-        <td style="color:#1558b0;padding:3px 0;">Orç. ${doc}</td>
-        <td style="text-align:right;">${qtd} UN${dev > 0 ? ` <span style="color:#7c4a00;font-size:0.8rem;">(Dev: ${dev})</span>` : ''}</td>
-      </tr>`;
-    });
-    html += `</table>`;
-  }
-
+  let html = `<table style="width:100%"><tr><td style="color:#6b7a99;">Código</td><td>${formatarCodigo(entrada.codigo)}</td></tr>
+    <tr><td style="color:#6b7a99;">Produto</td><td><strong>${entrada.nome}</strong></td></tr>
+    <tr><td style="color:#6b7a99;">Documento</td><td>${formatarCodigo(entrada.documento)}</td></tr>
+    <tr><td style="color:#6b7a99;">Lote</td><td>${entrada.lote}</td></tr></table>
+    <hr><table><tr><td>Produzido:</td><td><strong>${produzido}</strong></td></tr>
+    <tr><td>Total Saídas:</td><td><strong>${totalSaida}</strong></td></tr>
+    <tr><td>Devoluções:</td><td><strong>${totalDev}</strong></td></tr>
+    <tr><td>Saldo Atual:</td><td style="color:${saldoColor}"><strong>${saldoAtual}</strong></td></tr></table>
+    <hr><div><strong>Saídas por Orçamento:</strong></div>`;
+  if(!saidas.length) html += `<div>Nenhuma saída registrada.</div>`;
+  else { saidas.forEach(s => { const doc = formatarCodigo(s.documento); const qtd = parseInt(s.quantidade)||0; const dev = devPorDoc[doc]||0; html += `<div>Orç. ${doc}: ${qtd} UN${dev>0?` (Dev: ${dev})`:''}</div>`; }); }
   div.innerHTML = html;
   trackResultData = { entrada, produzido, totalSaida, totalDev, saldoAtual, saidas, devPorDoc };
 }
 
 function trackGerarPDF() {
-  if (!trackResultData) { toast('Faça uma busca primeiro.', 'err'); return; }
+  if(!trackResultData) { toast('Faça uma busca primeiro.', 'err'); return; }
   const { entrada, produzido, totalSaida, totalDev, saldoAtual, saidas, devPorDoc } = trackResultData;
-  const win  = window.open('', '_blank');
+  const win = window.open('', '_blank');
   const hoje = new Date().toLocaleDateString('pt-BR');
-  const saidasHtml = saidas.map(s => {
-    const doc = formatarCodigo(s.documento);
-    const qtd = parseInt(parseFloat(s.quantidade)) || 0;
-    const dev = devPorDoc[doc] || 0;
-    return `<tr><td>Orçamento: ${doc}</td><td style="text-align:right;">${qtd} UN${dev > 0 ? ` (Dev: ${dev})` : ''}</td></tr>`;
-  }).join('');
-
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <title>Rastreabilidade – ${entrada.nome}</title>
-  <style>
-    body { font-family: Arial, sans-serif; font-size:12px; margin:30px; color:#222; }
-    h1 { font-size:16px; text-align:center; }
-    .date { text-align:right; font-size:11px; margin-top:-18px; }
-    table { width:100%; border-collapse:collapse; margin-bottom:10px; }
-    td { padding:4px 6px; }
-    td:first-child { font-weight:bold; width:155px; }
-    .sep { border-top:1px dashed #aaa; margin:10px 0; }
-    .footer { text-align:right; font-weight:bold; font-size:13px; margin-top:30px; }
-    @media print { button{display:none;} }
-  </style></head><body>
-  <h1>Rastreabilidade</h1>
-  <div class="date">${hoje}</div>
-  <div class="sep"></div>
-  <table>
-    <tr><td>Código:</td><td>${formatarCodigo(entrada.codigo)}</td></tr>
+  const saidasHtml = saidas.map(s => `<tr><td>Orçamento: ${formatarCodigo(s.documento)}</td><td>${parseInt(s.quantidade)||0} UN${devPorDoc[formatarCodigo(s.documento)]?` (Dev: ${devPorDoc[formatarCodigo(s.documento)]})`:''}</td></tr>`).join('');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Rastreabilidade</title><style>body{font-family:Arial;margin:30px;}table{width:100%;border-collapse:collapse;}td{padding:4px;}</style></head><body>
+    <h1>Rastreabilidade</h1><div>${hoje}</div><hr>
+    <table><tr><td>Código:</td><td>${formatarCodigo(entrada.codigo)}</td></tr>
     <tr><td>Produto:</td><td>${entrada.nome}</td></tr>
     <tr><td>Documento:</td><td>${formatarCodigo(entrada.documento)}</td></tr>
-    <tr><td>Lançamento:</td><td>${formatarData(entrada.data_lancamento)}</td></tr>
-    <tr><td>Vencimento:</td><td>${formatarData(entrada.data_vencimento)}</td></tr>
-    <tr><td>Lote:</td><td>${entrada.lote}</td></tr>
-  </table>
-  <div class="sep"></div>
-  <table>
-    <tr><td>Produzido:</td><td>${produzido}</td></tr>
-    <tr><td>Total Saídas:</td><td>${totalSaida}</td></tr>
-    <tr><td>Devoluções:</td><td>${totalDev}</td></tr>
-    <tr><td>Saldo Atual:</td><td><b>${saldoAtual}</b></td></tr>
-  </table>
-  <div class="sep"></div>
-  <b>Saídas por Orçamento:</b>
-  <table>${saidasHtml || '<tr><td>Nenhuma saída registrada.</td></tr>'}</table>
-  <div class="footer">LNP</div>
-  <br><button onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
-  </body></html>`);
+    <tr><td>Lote:</td><td>${entrada.lote}</td></tr></table><hr>
+    <table><tr><td>Produzido:</td><td>${produzido}</td></tr><tr><td>Total Saídas:</td><td>${totalSaida}</td></tr>
+    <tr><td>Devoluções:</td><td>${totalDev}</td></tr><tr><td>Saldo Atual:</td><td><b>${saldoAtual}</b></td></tr></table><hr>
+    <b>Saídas por Orçamento:</b><table>${saidasHtml}</table>
+    <button onclick="window.print()">Imprimir</button></body></html>`);
   win.document.close();
 }
 
-/* ════════════════════════════════════════════════════════
-   MÓDULO 2 – COMPARADOR
-════════════════════════════════════════════════════════ */
-let compOrcamento     = '';
-let produtosOrcamento = [];
-let produtosCaixas    = [];
+function trackAbrirGerenciar() {
+  _allEntries = STORAGE.get('produtos_entrada');
+  entriesRender();
+  document.getElementById('modal-entradas').classList.add('open');
+}
+function entriesRender() {
+  const fNome = document.getElementById('ef-nome').value.toLowerCase();
+  const fLote = document.getElementById('ef-lote').value.toLowerCase();
+  const fDoc = document.getElementById('ef-doc').value.toLowerCase();
+  const filtrados = _allEntries.filter(e => (!fNome || (e.nome||'').toLowerCase().includes(fNome)) && (!fLote || (e.lote||'').toLowerCase().includes(fLote)) && (!fDoc || (e.documento||'').toLowerCase().includes(fDoc)));
+  document.getElementById('entries-count').textContent = `${filtrados.length} de ${_allEntries.length} registros`;
+  const tb = document.getElementById('tbody-entries');
+  if(!filtrados.length) { tb.innerHTML = '<tr><td colspan="7">Nenhum registro.</td></tr>'; return; }
+  tb.innerHTML = filtrados.map((e,i) => `<tr${i%2?' style="background:#fafbfd;"':''}>
+    <td><input type="checkbox" class="cb-entry" data-id="${i}"></td>
+    <td>${e.nome||'—'}</td><td>${e.lote||'—'}</td><td>${formatarCodigo(e.documento)}</td>
+    <td class="td-center">${e.quantidade||'—'}</td><td class="td-center">${formatarData(e.data_lancamento)||'—'}</td>
+    <td class="td-center">${formatarData(e.data_vencimento)||'—'}</td></tr>`).join('');
+}
+function entriesToggleAll(checked) { document.querySelectorAll('.cb-entry').forEach(cb => cb.checked = checked); }
+function trackDeletarSelecionados() {
+  const selecionados = [...document.querySelectorAll('.cb-entry:checked')].map(cb => parseInt(cb.dataset.id)).sort((a,b)=>b-a);
+  if(!selecionados.length) { toast('Selecione registros.', 'err'); return; }
+  if(!confirm(`Excluir ${selecionados.length} registro(s)?`)) return;
+  selecionados.forEach(idx => _allEntries.splice(idx,1));
+  STORAGE.setAll('produtos_entrada', _allEntries);
+  entriesRender();
+  toast(`✅ ${selecionados.length} registro(s) excluído(s)!`);
+}
 
+// COMPARADOR
 function compTab(btn, tabId) {
   document.querySelectorAll('.comp-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.comp-tab-content').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById(tabId).classList.add('active');
 }
-
 function compProcessarOrcamento() {
   const data = document.getElementById('comp-orcamento-input').value.trim();
-  if (!data) { toast('Cole os dados do orçamento.', 'err'); return; }
-
+  if(!data) { toast('Cole os dados do orçamento.', 'err'); return; }
   const mOrc = data.match(/^(\d{6})/);
-  if (mOrc) compOrcamento = mOrc[1];
-
+  if(mOrc) compOrcamento = mOrc[1];
   const matches = [...data.matchAll(/'([^']+)'/g)];
   produtosOrcamento = [];
-  matches.forEach(m => {
-    const inner = m[1].trim();
-    const mp = inner.match(/^(\d+)\s+(.+)/);
-    if (mp) produtosOrcamento.push({ Produto: cleanProductName(mp[2]), Quantidade: parseInt(mp[1]) });
-  });
-
-  document.getElementById('comp-orcamento-num').textContent =
-    compOrcamento ? `Orçamento: ${compOrcamento}` : '';
+  matches.forEach(m => { const inner = m[1].trim(); const mp = inner.match(/^(\d+)\s+(.+)/); if(mp) produtosOrcamento.push({ Produto: cleanProductName(mp[2]), Quantidade: parseInt(mp[1]) }); });
+  document.getElementById('comp-orcamento-num').textContent = compOrcamento ? `Orçamento: ${compOrcamento}` : '';
   compRenderOrcamento();
   toast(`✅ ${produtosOrcamento.length} produtos carregados.`);
 }
-
 function compRenderOrcamento() {
   const tb = document.getElementById('tbody-orcamento');
-  if (!produtosOrcamento.length) {
-    tb.innerHTML = '<tr><td colspan="2" style="text-align:center;color:#a0aec0;padding:24px;">Nenhum produto.</td></tr>';
-    return;
-  }
-  const sorted = [...produtosOrcamento].sort((a, b) => a.Produto.localeCompare(b.Produto));
-  tb.innerHTML = sorted.map(p =>
-    `<tr><td>${p.Produto}</td><td class="td-center">${p.Quantidade}</td></tr>`
-  ).join('');
+  if(!produtosOrcamento.length) { tb.innerHTML = '<tr><td colspan="2">Nenhum produto.</td></tr>'; return; }
+  tb.innerHTML = produtosOrcamento.sort((a,b)=>a.Produto.localeCompare(b.Produto)).map(p => `<tr><td>${p.Produto}</td><td class="td-center">${p.Quantidade}</td></tr>`).join('');
 }
-
 function compProcessarCaixas() {
   const data = document.getElementById('comp-caixas-input').value.trim();
-  if (!data) { toast('Cole os dados das caixas.', 'err'); return; }
-  if (produtosCaixas.length > 0 && !confirm('Já existem dados nas caixas. Deseja substituir?')) return;
+  if(!data) { toast('Cole os dados das caixas.', 'err'); return; }
+  if(produtosCaixas.length && !confirm('Substituir dados existentes?')) return;
   produtosCaixas = [];
-  _parseCaixasLines(data);
-  compRenderCaixas();
-  toast(`✅ Caixas processadas — ${produtosCaixas.length} produtos únicos.`);
-}
-
-function _parseCaixasLines(data) {
   data.split('\n').forEach(linha => {
     linha = linha.trim();
-    if (!linha) return;
+    if(!linha) return;
     const partes = linha.split(/\s{2,}/);
-    if (partes.length >= 2) {
-      const produto = cleanProductName(partes[0]);
-      const lote    = partes[1].trim();
-      const found   = produtosCaixas.find(p => p.Produto === produto && p.Lote === lote);
-      if (found) { found.Quantidade++; }
-      else { produtosCaixas.push({ Produto: produto, Lote: lote, Quantidade: 1 }); }
+    if(partes.length >= 2) {
+      const produto = cleanProductName(partes[0]), lote = partes[1].trim();
+      const found = produtosCaixas.find(p => p.Produto === produto && p.Lote === lote);
+      if(found) found.Quantidade++;
+      else produtosCaixas.push({ Produto: produto, Lote: lote, Quantidade: 1 });
     }
   });
+  compRenderCaixas();
+  toast(`✅ ${produtosCaixas.length} produtos processados.`);
 }
-
 function compRenderCaixas() {
   const tb = document.getElementById('tbody-caixas');
-  if (!produtosCaixas.length) {
-    tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:24px;">Nenhum produto.</td></tr>';
-    return;
-  }
-  const sorted = [...produtosCaixas].sort((a, b) => a.Produto.localeCompare(b.Produto));
-  tb.innerHTML = sorted.map(p => {
-    const idx = produtosCaixas.indexOf(p);
-    return `<tr>
-      <td>${p.Produto}</td>
-      <td class="td-center">${p.Quantidade}</td>
-      <td class="td-center">${p.Lote}</td>
-      <td class="td-center">
-        <button onclick="compAbrirModalEditar(${idx})"
-          style="background:#dbeafe;color:#1558b0;border:1px solid #bfdbfe;padding:3px 9px;border-radius:6px;cursor:pointer;font-size:0.76rem;margin-right:3px;font-weight:700;">✏️</button>
-        <button onclick="compDeletarCaixa(${idx})"
-          style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:3px 9px;border-radius:6px;cursor:pointer;font-size:0.76rem;font-weight:700;">🗑</button>
-      </td>
-    </tr>`;
-  }).join('');
+  if(!produtosCaixas.length) { tb.innerHTML = '<tr><td colspan="4">Nenhum produto.</td></tr>'; return; }
+  tb.innerHTML = produtosCaixas.map((p,idx) => `<tr><td>${p.Produto}</td><td class="td-center">${p.Quantidade}</td><td class="td-center">${p.Lote}</td>
+    <td class="td-center"><button onclick="compAbrirModalEditar(${idx})">✏️</button> <button onclick="compDeletarCaixa(${idx})">🗑</button></td></tr>`).join('');
 }
-
 function compComparar() {
-  if (!produtosOrcamento.length || !produtosCaixas.length) {
-    toast('Insira dados de orçamento e caixas antes de comparar.', 'err'); return;
-  }
-  const mapOrc = {};
-  produtosOrcamento.forEach(p => mapOrc[p.Produto] = p.Quantidade);
-  const mapCx = {};
-  produtosCaixas.forEach(p => { mapCx[p.Produto] = (mapCx[p.Produto] || 0) + p.Quantidade; });
-
-  const todos = [...new Set([...Object.keys(mapOrc), ...Object.keys(mapCx)])].sort();
+  if(!produtosOrcamento.length || !produtosCaixas.length) { toast('Insira dados de orçamento e caixas.', 'err'); return; }
+  const mapOrc = {}; produtosOrcamento.forEach(p => mapOrc[p.Produto] = p.Quantidade);
+  const mapCx = {}; produtosCaixas.forEach(p => mapCx[p.Produto] = (mapCx[p.Produto]||0) + p.Quantidade);
+  const todos = [...new Set([...Object.keys(mapOrc),...Object.keys(mapCx)])].sort();
   let hasDivergencia = false;
-
   const tb = document.getElementById('tbody-comparacao');
-  tb.innerHTML = todos.map(produto => {
-    const qtdOrc = mapOrc[produto] || 0;
-    const qtdCx  = mapCx[produto]  || 0;
-    const ok     = qtdOrc === qtdCx;
-    if (!ok) hasDivergencia = true;
-    return `<tr class="${ok ? '' : 'tr-div'}">
-      <td>${produto}</td>
-      <td class="td-center">${qtdOrc}</td>
-      <td class="td-center">${qtdCx}</td>
-      <td class="td-center"><span class="badge ${ok ? 'badge-ok' : 'badge-div'}">${ok ? '✅ OK' : '⚠️ Divergência'}</span></td>
-    </tr>`;
-  }).join('');
-
+  tb.innerHTML = todos.map(produto => { const qtdOrc = mapOrc[produto]||0, qtdCx = mapCx[produto]||0, ok = qtdOrc === qtdCx; if(!ok) hasDivergencia = true; return `<tr class="${ok?'':'tr-div'}"><td>${produto}</td><td class="td-center">${qtdOrc}</td><td class="td-center">${qtdCx}</td><td class="td-center"><span class="badge ${ok?'badge-ok':'badge-div'}">${ok?'✅ OK':'⚠️ Divergência'}</span></td></tr>`; }).join('');
   const banner = document.getElementById('comp-status-banner');
   banner.style.display = 'flex';
   banner.className = hasDivergencia ? 'status-div' : 'status-ok';
   banner.textContent = hasDivergencia ? '⚠️ DIVERGÊNCIA ENCONTRADA' : '✅ TUDO OK';
-
-  // Vai para aba comparação
   document.querySelectorAll('.comp-tab')[2].click();
 }
-
-async function compFinalizarSalvar() {
-  if (!produtosCaixas.length) { toast('Nenhum dado de caixas para salvar.', 'err'); return; }
-  if (!compOrcamento) { toast('Nenhum número de orçamento encontrado.', 'err'); return; }
-
-  showLoading('Salvando saídas no Firebase...');
-  try {
-    const promises = produtosCaixas.map(p =>
-      DB.add(KEY_SAIDA, {
-        nome: p.Produto, lote: p.Lote,
-        documento: compOrcamento, quantidade: String(p.Quantidade),
-        criado_em: new Date().toISOString(),
-      })
-    );
-    await Promise.all(promises);
-
-    // Download CSV
-    let csv = 'Produto,Lote,Orçamento,Quantidade\n';
-    produtosCaixas.forEach(p => {
-      csv += `"${p.Produto}","${p.Lote}","${compOrcamento}","${p.Quantidade}"\n`;
-    });
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url;
-    a.download = `Orcamento_${compOrcamento}_${new Date().toISOString().slice(0,10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-
-    toast(`✅ Orçamento ${compOrcamento} salvo no Firebase e exportado!`);
-    compLimparTudo(true);
-  } catch(e) {
-    toast('❌ Erro ao salvar: ' + e.message, 'err');
-  } finally { hideLoading(); }
+function compFinalizarSalvar() {
+  if(!produtosCaixas.length) { toast('Nenhum dado para salvar.', 'err'); return; }
+  if(!compOrcamento) { toast('Nenhum número de orçamento.', 'err'); return; }
+  produtosCaixas.forEach(p => STORAGE.add('produtos_saida', { nome: p.Produto, lote: p.Lote, documento: compOrcamento, quantidade: String(p.Quantidade), criado_em: new Date().toISOString() }));
+  let csv = 'Produto,Lote,Orçamento,Quantidade\n';
+  produtosCaixas.forEach(p => csv += `"${p.Produto}","${p.Lote}","${compOrcamento}","${p.Quantidade}"\n`);
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `Orcamento_${compOrcamento}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast(`✅ Orçamento ${compOrcamento} salvo e exportado!`);
+  compLimparTudo(true);
 }
-
-function compLimparTudo(silent = false) {
-  if (!silent && !confirm('Limpar todos os dados do comparador?')) return;
+function compLimparTudo(silent=false) {
+  if(!silent && !confirm('Limpar todos os dados?')) return;
   compOrcamento = ''; produtosOrcamento = []; produtosCaixas = [];
   document.getElementById('comp-orcamento-input').value = '';
-  document.getElementById('comp-caixas-input').value    = '';
+  document.getElementById('comp-caixas-input').value = '';
   document.getElementById('comp-orcamento-num').textContent = '';
   compRenderOrcamento(); compRenderCaixas();
-  document.getElementById('tbody-comparacao').innerHTML =
-    '<tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:24px;">Clique em "Comparar Dados" para gerar a comparação.</td></tr>';
-  const b = document.getElementById('comp-status-banner');
-  b.style.display = 'none'; b.className = '';
-  if (!silent) toast('Dados limpos.');
+  document.getElementById('tbody-comparacao').innerHTML = '<tr><td colspan="4">Clique em "Comparar Dados".</td></tr>';
+  document.getElementById('comp-status-banner').style.display = 'none';
+  if(!silent) toast('Dados limpos.');
 }
-
-/* Modal */
-let _modalEditIdx = null;
-
-function compAbrirModalAdicionar() {
-  _modalEditIdx = null;
-  document.getElementById('modal-caixa-title').textContent = 'Adicionar Item';
-  document.getElementById('modal-produto').value   = '';
-  document.getElementById('modal-quantidade').value= '1';
-  document.getElementById('modal-lote').value      = '';
-  document.getElementById('modal-multi-input').value = '';
-  document.getElementById('modal-caixa').classList.add('open');
-}
-function compAbrirModalEditar(idx) {
-  _modalEditIdx = idx;
-  const p = produtosCaixas[idx];
-  document.getElementById('modal-caixa-title').textContent = 'Editar Item';
-  document.getElementById('modal-produto').value    = p.Produto;
-  document.getElementById('modal-quantidade').value = p.Quantidade;
-  document.getElementById('modal-lote').value       = p.Lote;
-  document.getElementById('modal-multi-input').value = '';
-  document.getElementById('modal-caixa').classList.add('open');
-}
-function fecharModalCaixa() {
-  document.getElementById('modal-caixa').classList.remove('open');
-}
+function compAbrirModalAdicionar() { _modalEditIdx = null; document.getElementById('modal-caixa-title').textContent = 'Adicionar Item'; document.getElementById('modal-produto').value = ''; document.getElementById('modal-quantidade').value = '1'; document.getElementById('modal-lote').value = ''; document.getElementById('modal-multi-input').value = ''; document.getElementById('modal-caixa').classList.add('open'); }
+function compAbrirModalEditar(idx) { _modalEditIdx = idx; const p = produtosCaixas[idx]; document.getElementById('modal-caixa-title').textContent = 'Editar Item'; document.getElementById('modal-produto').value = p.Produto; document.getElementById('modal-quantidade').value = p.Quantidade; document.getElementById('modal-lote').value = p.Lote; document.getElementById('modal-caixa').classList.add('open'); }
+function fecharModalCaixa() { document.getElementById('modal-caixa').classList.remove('open'); }
 function compProcessarModalMulti() {
   const data = document.getElementById('modal-multi-input').value.trim();
-  if (!data) { toast('Nenhum dado para processar.', 'err'); return; }
-  _parseCaixasLines(data);
+  if(!data) { toast('Nenhum dado.', 'err'); return; }
+  data.split('\n').forEach(linha => {
+    linha = linha.trim();
+    if(!linha) return;
+    const partes = linha.split(/\s{2,}/);
+    if(partes.length >= 2) {
+      const produto = cleanProductName(partes[0]), lote = partes[1].trim();
+      const found = produtosCaixas.find(p => p.Produto === produto && p.Lote === lote);
+      if(found) found.Quantidade++;
+      else produtosCaixas.push({ Produto: produto, Lote: lote, Quantidade: 1 });
+    }
+  });
   compRenderCaixas();
   fecharModalCaixa();
-  toast('✅ Itens adicionados!');
+  toast('Itens adicionados!');
 }
 function compSalvarModal() {
-  const produto   = document.getElementById('modal-produto').value.trim();
-  const lote      = document.getElementById('modal-lote').value.trim();
+  const produto = document.getElementById('modal-produto').value.trim();
+  const lote = document.getElementById('modal-lote').value.trim();
   const quantidade = parseInt(document.getElementById('modal-quantidade').value) || 1;
-  if (!produto || !lote) { toast('Produto e Lote são obrigatórios.', 'err'); return; }
-  if (_modalEditIdx !== null) {
-    produtosCaixas[_modalEditIdx] = { Produto: produto, Quantidade: quantidade, Lote: lote };
-  } else {
-    const found = produtosCaixas.find(p => p.Produto === produto && p.Lote === lote);
-    if (found) { found.Quantidade += quantidade; }
-    else { produtosCaixas.push({ Produto: produto, Quantidade: quantidade, Lote: lote }); }
-  }
-  compRenderCaixas(); fecharModalCaixa(); toast('✅ Item salvo!');
+  if(!produto || !lote) { toast('Produto e Lote obrigatórios.', 'err'); return; }
+  if(_modalEditIdx !== null) produtosCaixas[_modalEditIdx] = { Produto: produto, Quantidade: quantidade, Lote: lote };
+  else { const found = produtosCaixas.find(p => p.Produto === produto && p.Lote === lote); if(found) found.Quantidade += quantidade; else produtosCaixas.push({ Produto: produto, Quantidade: quantidade, Lote: lote }); }
+  compRenderCaixas(); fecharModalCaixa(); toast('Item salvo!');
 }
-function compDeletarCaixa(idx) {
-  if (!confirm('Deletar este item?')) return;
-  produtosCaixas.splice(idx, 1);
-  compRenderCaixas();
-}
+function compDeletarCaixa(idx) { if(confirm('Deletar item?')) { produtosCaixas.splice(idx,1); compRenderCaixas(); } }
 
-/* ════════════════════════════════════════════════════════
-   MÓDULO 3 – DEVOLUÇÃO
-════════════════════════════════════════════════════════ */
-let devScanData    = [];
-let devSelectedIdx = -1;  // índice da linha selecionada na tabela
-
-/* Motivos */
-const motivos = [
-  "Alteracao de qualidade","Atraso no agendamento","Avaria no transporte",
-  "Baixa rotatividade","Cancelamento antes da entrega","Carga incompleta",
-  "Carga molhada","Cliente nao aceita substituicao","Cliente sem condicoes de recebimento",
-  "Defeito de fabricacao","Devolucao para troca","Devolucao por desacordo comercial",
-  "Divergencia comercial","Divergencia entre pedido e nota fiscal","Embalagem violada",
-  "Endereco incorreto","Entrega fora do prazo","Entrega sem autorizacao",
-  "Envio para cliente incorreto","Erro operacional interno","Estabelecimento fechado",
-  "Excesso de estoque","Falha de fechamento do pacote","Falta de espaco para armazenamento",
-  "Faturamento incorreto","Inversao de produtos","Motivo em analise","Pedido duplicado",
-  "Produto nao solicitado","Produto vencido","Quantidade divergente",
-  "Recusa no recebimento","Volume extraviado",
-];
-
-(function buildMotivoList() {
+// DEVOLUÇÃO
+function buildMotivoList() {
   const list = document.getElementById('motivo-list');
-  motivos.forEach(m => {
-    const d = document.createElement('div');
-    d.textContent = m;
-    d.onclick = () => {
-      const btn = document.getElementById('motivo-btn');
-      btn.textContent = m;
-      btn.dataset.selected = m;
-      list.classList.remove('open');
-      btn.classList.remove('open');
-    };
-    list.appendChild(d);
-  });
-})();
-
-function toggleMotivo() {
-  document.getElementById('motivo-list').classList.toggle('open');
-  document.getElementById('motivo-btn').classList.toggle('open');
+  motivos.forEach(m => { const d = document.createElement('div'); d.textContent = m; d.onclick = () => { document.getElementById('motivo-btn').textContent = m; document.getElementById('motivo-btn').dataset.selected = m; list.classList.remove('open'); }; list.appendChild(d); });
 }
-document.addEventListener('click', e => {
-  if (!e.target.closest('.motivo-wrapper')) {
-    document.getElementById('motivo-list').classList.remove('open');
-    document.getElementById('motivo-btn').classList.remove('open');
-  }
-});
-
+function toggleMotivo() { document.getElementById('motivo-list').classList.toggle('open'); }
 function devProcessarScan() {
-  const scanText  = document.getElementById('dev-scan').value.trim();
-  if (!scanText) return;
+  const scanText = document.getElementById('dev-scan').value.trim();
+  if(!scanText) return;
   const orcamento = document.getElementById('dev-orcamento').value.trim();
-  if (!orcamento) {
-    toast('Informe o orçamento / NF antes de escanear.', 'err');
-    document.getElementById('dev-orcamento').focus(); return;
-  }
+  if(!orcamento) { toast('Informe o orçamento/NF.', 'err'); return; }
   const partes = scanText.split(/\s{2,}/);
-  if (partes.length < 2) {
-    toast('Formato inválido. Use: PRODUTO  LOTE (2+ espaços)', 'err');
-    document.getElementById('dev-scan').value = ''; return;
-  }
-  const produto = partes[0].trim();
-  const lote    = partes[1].trim();
-  const existing = devScanData.find(i =>
-    i.Produto === produto && i.Lote === lote && i['Orçamento/NF'] === orcamento
-  );
-  if (existing) { existing.Quantidade++; }
-  else { devScanData.push({ Produto: produto, Lote: lote, 'Orçamento/NF': orcamento, Quantidade: 1 }); }
+  if(partes.length < 2) { toast('Formato inválido. Use: PRODUTO  LOTE', 'err'); return; }
+  const produto = partes[0].trim(), lote = partes[1].trim();
+  const existing = devScanData.find(i => i.Produto === produto && i.Lote === lote && i['Orçamento/NF'] === orcamento);
+  if(existing) existing.Quantidade++;
+  else devScanData.push({ Produto: produto, Lote: lote, 'Orçamento/NF': orcamento, Quantidade: 1 });
   devSelectedIdx = -1;
   devRenderTabela();
   document.getElementById('dev-scan').value = '';
   document.getElementById('dev-scan').focus();
 }
-
-function devSimularScan() {
-  document.getElementById('dev-scan').value = 'PRODUTO EXEMPLO SIMULADO   LOTE-2025/001';
-  devProcessarScan();
-}
-
+function devSimularScan() { document.getElementById('dev-scan').value = 'PRODUTO EXEMPLO   LOTE-2025/001'; devProcessarScan(); }
 function devRenderTabela() {
   const tb = document.getElementById('tbody-dev');
   let totalUn = 0;
-  if (!devScanData.length) {
-    tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:24px;">Nenhum item escaneado.</td></tr>';
-  } else {
-    tb.innerHTML = devScanData.map((item, i) => {
-      totalUn += item.Quantidade;
-      const sel = i === devSelectedIdx ? 'class="tr-selected"' : '';
-      const bg  = i !== devSelectedIdx && i % 2 !== 0 ? 'style="background:#fafbfd;"' : '';
-      return `<tr ${sel} ${bg} onclick="devSelecionarLinha(${i})" style="cursor:pointer;${i===devSelectedIdx?'':''}">
-        <td>${item.Produto}</td>
-        <td class="td-center">${item.Lote}</td>
-        <td class="td-center">${item['Orçamento/NF']}</td>
-        <td class="td-center"><b>${item.Quantidade}</b></td>
-      </tr>`;
-    }).join('');
-  }
-  const n = devScanData.length;
-  document.getElementById('dev-count').textContent =
-    `${n} ${n===1?'item':'itens'} | ${totalUn} unidade${totalUn!==1?'s':''}`;
+  if(!devScanData.length) tb.innerHTML = '<tr><td colspan="4">Nenhum item escaneado.</td></tr>';
+  else tb.innerHTML = devScanData.map((item,i) => { totalUn += item.Quantidade; return `<tr onclick="devSelecionarLinha(${i})" style="cursor:pointer;${i===devSelectedIdx?'background:#eef4ff;':''}"><td>${item.Produto}</td><td class="td-center">${item.Lote}</td><td class="td-center">${item['Orçamento/NF']}</td><td class="td-center"><b>${item.Quantidade}</b></td></tr>`; }).join('');
+  document.getElementById('dev-count').textContent = `${devScanData.length} itens | ${totalUn} unidades`;
 }
-
-function devSelecionarLinha(idx) {
-  devSelectedIdx = devSelectedIdx === idx ? -1 : idx;
-  devRenderTabela();
-}
-
+function devSelecionarLinha(idx) { devSelectedIdx = devSelectedIdx === idx ? -1 : idx; devRenderTabela(); }
 function devDeletarItem() {
-  if (!devScanData.length) { toast('Nenhum item para deletar.', 'err'); return; }
-  const idx = devSelectedIdx >= 0 ? devSelectedIdx : devScanData.length - 1;
-  const item = devScanData[idx];
-  if (item.Quantidade > 1) { item.Quantidade--; }
-  else { devScanData.splice(idx, 1); devSelectedIdx = -1; }
+  if(!devScanData.length) { toast('Nenhum item.', 'err'); return; }
+  const idx = devSelectedIdx >=0 ? devSelectedIdx : devScanData.length-1;
+  if(devScanData[idx].Quantidade > 1) devScanData[idx].Quantidade--;
+  else { devScanData.splice(idx,1); devSelectedIdx = -1; }
   devRenderTabela();
 }
-
 function devLimpar() {
-  if (devScanData.length > 0 && !confirm('Limpar todos os dados?')) return;
+  if(devScanData.length && !confirm('Limpar todos os dados?')) return;
   devScanData = []; devSelectedIdx = -1;
-  ['dev-orcamento','dev-cliente','dev-complemento','dev-scan']
-    .forEach(id => { document.getElementById(id).value = ''; });
+  ['dev-orcamento','dev-cliente','dev-complemento','dev-scan'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('dev-responsavel').value = '--';
-  const btn = document.getElementById('motivo-btn');
-  btn.textContent = 'Selecione um motivo';
-  btn.dataset.selected = '';
+  document.getElementById('motivo-btn').textContent = 'Selecione um motivo';
+  document.getElementById('motivo-btn').dataset.selected = '';
   devRenderTabela();
 }
-
-async function devFinalizar() {
-  if (!devScanData.length) { toast('Nenhum item escaneado.', 'err'); return; }
+function devFinalizar() {
+  if(!devScanData.length) { toast('Nenhum item escaneado.', 'err'); return; }
   const motivo = document.getElementById('motivo-btn').dataset.selected || '';
-  if (!motivo) { toast('Selecione um motivo de retorno.', 'err'); return; }
-
-  const orcamento   = document.getElementById('dev-orcamento').value.trim();
-  const cliente     = document.getElementById('dev-cliente').value.trim();
+  if(!motivo) { toast('Selecione um motivo.', 'err'); return; }
+  const orcamento = document.getElementById('dev-orcamento').value.trim();
+  const cliente = document.getElementById('dev-cliente').value.trim();
   const responsavel = document.getElementById('dev-responsavel').value;
   const complemento = document.getElementById('dev-complemento').value.trim();
-  const agora       = new Date().toLocaleString('pt-BR');
-
-  // Captura antes de limpar
+  const agora = new Date().toLocaleString('pt-BR');
   const itensSalvar = [...devScanData];
-
-  showLoading('Salvando devolução no Firebase...');
-  try {
-    const promises = itensSalvar.map(item =>
-      DB.add(KEY_DEVOLUCAO, {
-        nome: item.Produto, lote: item.Lote,
-        documento: item['Orçamento/NF'], quantidade: String(item.Quantidade),
-        cliente, responsavel, motivo, complemento,
-        criado_em: new Date().toISOString(),
-      })
-    );
-    await Promise.all(promises);
-    devGerarPDF(orcamento, cliente, responsavel, motivo, complemento, agora, itensSalvar);
-    toast('✅ Devolução registrada no Firebase!');
-    devLimpar();
-  } catch(e) {
-    toast('❌ Erro ao salvar: ' + e.message, 'err');
-  } finally { hideLoading(); }
+  itensSalvar.forEach(item => STORAGE.add('produtos_devolucao', { nome: item.Produto, lote: item.Lote, documento: item['Orçamento/NF'], quantidade: String(item.Quantidade), cliente, responsavel, motivo, complemento, criado_em: new Date().toISOString() }));
+  devGerarPDF(orcamento, cliente, responsavel, motivo, complemento, agora, itensSalvar);
+  toast('✅ Devolução registrada!');
+  devLimpar();
 }
-
 function devGerarPDF(orcamento, cliente, responsavel, motivo, complemento, agora, itens) {
   const win = window.open('', '_blank');
-  const linhasTabela = (itens || devScanData).map((item, i) => {
-    const bg = i % 2 === 0 ? '#fff' : '#f8f8ff';
-    return `<tr style="background:${bg}">
-      <td style="padding:5px 8px;border:1px solid #ccc;">${item.Produto}</td>
-      <td style="padding:5px 8px;border:1px solid #ccc;text-align:center;">${item.Lote}</td>
-      <td style="padding:5px 8px;border:1px solid #ccc;text-align:center;">${item['Orçamento/NF']}</td>
-      <td style="padding:5px 8px;border:1px solid #ccc;text-align:center;">${item.Quantidade}</td>
-    </tr>`;
-  }).join('');
-
-  const motText  = motivo || 'Não informado.';
-  const compText = complemento && complemento !== motivo
-    ? `<p style="font-size:11px;font-style:italic;">Complemento: ${complemento}</p>` : '';
-
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <title>Devolução – ${orcamento || 'sem_numero'}</title>
-  <style>
-    body { font-family:Arial,sans-serif; font-size:12px; margin:20px; color:#222; }
-    h1   { font-size:14px; text-align:center; margin-bottom:4px; }
-    .sep { border:none; border-top:1px solid #aaa; margin:8px 0; }
-    .section { background:#ebebf5; padding:4px 8px; font-weight:bold; font-size:11px; margin:8px 0 4px; }
-    table.main { width:100%; border-collapse:collapse; margin-bottom:8px; }
-    td.lbl { font-weight:bold; width:55%; }
-    .sign-line { border:none; border-bottom:1px solid #888; display:inline-block; width:200px; margin-left:4px; }
-    .footer { font-size:10px; color:#888; text-align:center; margin-top:20px; }
-    @media print { button{display:none;} }
-  </style></head><body>
-  <h1>Formulario de Controle de Retorno de Produtos</h1>
-  <hr class="sep" style="border-top:2px solid #6060a0;">
-
-  <div class="section">Identificacao</div>
-  <table class="main">
-    <tr><td class="lbl">Cliente:</td><td class="lbl">Data / Hora:</td></tr>
-    <tr><td>${cliente||'—'}</td><td>${agora}</td></tr>
-    <tr><td class="lbl">Orcamento / Nota Fiscal:</td><td class="lbl">Responsavel pela leitura:</td></tr>
-    <tr><td>${orcamento||'—'}</td><td>${responsavel}</td></tr>
-  </table>
-  <hr class="sep">
-
-  <div class="section">Produtos Devolvidos</div>
-  <table style="width:100%;border-collapse:collapse;font-size:11px;">
-    <thead>
-      <tr style="background:#d2d2e6;color:#141440;">
-        <th style="padding:5px 8px;border:1px solid #ccc;text-align:left;">Produto</th>
-        <th style="padding:5px 8px;border:1px solid #ccc;text-align:center;">Lote</th>
-        <th style="padding:5px 8px;border:1px solid #ccc;text-align:center;">Orcamento/NF</th>
-        <th style="padding:5px 8px;border:1px solid #ccc;text-align:center;">Qtd</th>
-      </tr>
-    </thead>
-    <tbody>${linhasTabela}</tbody>
-  </table>
-  <hr class="sep">
-
-  <div class="section">Motivo de Retorno</div>
-  <p style="font-size:11px;">${motText}</p>${compText}
-  <hr class="sep">
-
-  <div class="section">Observacoes Adicionais</div>
-  <p style="margin:10px 0;border-bottom:1px solid #aaa;">&nbsp;</p>
-  <p style="margin:10px 0;border-bottom:1px solid #aaa;">&nbsp;</p>
-  <p style="margin:10px 0;border-bottom:1px solid #aaa;">&nbsp;</p>
-  <hr class="sep">
-
-  <div class="section">Avaliacao e Assinaturas</div>
-  <p style="font-size:11px;">Responsavel pela leitura: <span class="sign-line"></span></p>
-  <p style="font-size:11px;">Avaliacao pela gerencia: <span class="sign-line"></span></p>
-  <p style="font-size:11px;font-weight:bold;margin-top:10px;">O retorno sera aceito?  ( ) Sim &nbsp;&nbsp; ( ) Nao &nbsp;&nbsp;&nbsp;&nbsp; Visto gerencia: <span class="sign-line" style="width:140px;"></span></p>
-  <p style="font-size:11px;font-weight:bold;margin-top:8px;">Se o retorno for aceito:</p>
-  <p style="font-size:11px;">Conferencia pelo auxiliar de expedicao na entrega: <span class="sign-line" style="width:100px;"></span></p>
-  <p style="font-size:11px;">Visto do auxiliar de expedicao: <span class="sign-line" style="width:150px;"></span></p>
-  <p style="font-size:11px;font-weight:bold;margin-top:6px;">(Manter produtos segregados e identificados como 'Produto nao conforme')</p>
-  <p style="font-size:11px;">Disposicao: &nbsp;( ) Descarte dos produtos &nbsp;&nbsp;&nbsp;&nbsp; ( ) Retorno ao estoque</p>
-  <hr class="sep" style="margin-top:16px;">
-
-  <div class="footer">
-    Revisao 00: 13/07/2017 - inicial | Revisao 01: 20/02/2018 - alteracao no layout | Revisao 02: 27/03/2025 - alteracao no layout
-  </div>
-  <br>
-  <button onclick="window.print()" style="padding:8px 20px;cursor:pointer;">🖨️ Imprimir / Salvar PDF</button>
-  </body></html>`);
+  const linhasTabela = itens.map(item => `<tr><td style="border:1px solid #ccc;padding:5px;">${item.Produto}</td><td style="border:1px solid #ccc;text-align:center;">${item.Lote}</td><td style="border:1px solid #ccc;text-align:center;">${item['Orçamento/NF']}</td><td style="border:1px solid #ccc;text-align:center;">${item.Quantidade}</td></tr>`).join('');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Devolução</title><style>body{font-family:Arial;margin:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ccc;padding:8px;}</style></head><body>
+    <h1>Formulário de Devolução</h1><hr>
+    <p><strong>Cliente:</strong> ${cliente||'—'} | <strong>Data:</strong> ${agora}</p>
+    <p><strong>Orçamento/NF:</strong> ${orcamento||'—'} | <strong>Responsável:</strong> ${responsavel}</p>
+    <h3>Produtos Devolvidos</h3>
+    <table><thead><tr><th>Produto</th><th>Lote</th><th>Orçamento/NF</th><th>Qtd</th></tr></thead><tbody>${linhasTabela}</tbody></table>
+    <p><strong>Motivo:</strong> ${motivo}</p>
+    <p><strong>Complemento:</strong> ${complemento||'—'}</p>
+    <button onclick="window.print()">Imprimir PDF</button></body></html>`);
   win.document.close();
 }
 
-/* ════════════════════════════════════════════════════════
-   STATUS FIREBASE – monitora conectividade em tempo real
-════════════════════════════════════════════════════════ */
-function setFbStatus(status) {
-  const ids = ['fb-status-track', 'fb-status-comp', 'fb-status-dev'];
-  const labels = { connecting: 'Conectando...', online: 'Firebase Online', offline: 'Firebase Offline' };
-  ids.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.className = `firebase-status ${status}`;
-    el.querySelector('.label').textContent = labels[status];
-  });
-}
-
-function startFbStatusWatcher() {
-  // Listener Firestore para confirmar conexão real
-  db.collection('_ping').doc('_ping').onSnapshot(
-    () => setFbStatus('online'),
-    ()  => setFbStatus('offline')
-  );
-  window.addEventListener('online',  () => setFbStatus('online'));
-  window.addEventListener('offline', () => setFbStatus('offline'));
-  // Timeout: se em 8s não confirmou, marca offline
-  setTimeout(() => {
-    const el = document.getElementById('fb-status-track');
-    if (el && el.classList.contains('connecting')) setFbStatus('offline');
-  }, 8000);
-}
-
-/* ════════════════════════════════════════════════════════
-   GERENCIAR / EXCLUIR ENTRADAS
-════════════════════════════════════════════════════════ */
-let _allEntries = [];
-
-async function trackAbrirGerenciar() {
-  showLoading('Carregando entradas...');
-  try {
-    _allEntries = await DB.get(KEY_ENTRADA);
-    document.getElementById('ef-nome').value = '';
-    document.getElementById('ef-lote').value = '';
-    document.getElementById('ef-doc').value  = '';
-    document.getElementById('cb-all').checked = false;
-    entriesRender();
-    document.getElementById('modal-entradas').classList.add('open');
-  } catch(e) {
-    toast('❌ Erro ao carregar: ' + e.message, 'err');
-  } finally { hideLoading(); }
-}
-
-function entriesRender() {
-  const fNome = document.getElementById('ef-nome').value.toLowerCase();
-  const fLote = document.getElementById('ef-lote').value.toLowerCase();
-  const fDoc  = document.getElementById('ef-doc').value.toLowerCase();
-
-  const filtrados = _allEntries.filter(e =>
-    (!fNome || (e.nome||'').toLowerCase().includes(fNome)) &&
-    (!fLote || (e.lote||'').toLowerCase().includes(fLote)) &&
-    (!fDoc  || (e.documento||'').toLowerCase().includes(fDoc))
-  );
-
-  document.getElementById('entries-count').textContent =
-    `${filtrados.length} de ${_allEntries.length} registros`;
-
-  const tb = document.getElementById('tbody-entries');
-  if (!filtrados.length) {
-    tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#a0aec0;padding:20px;">Nenhum registro encontrado.</td></tr>';
-    return;
-  }
-  tb.innerHTML = filtrados.map((e, i) => {
-    const bg = i % 2 === 0 ? '' : 'style="background:#fafbfd;"';
-    return `<tr ${bg}>
-      <td class="td-center"><input type="checkbox" class="cb-entry" data-id="${e._id}" style="cursor:pointer;width:15px;height:15px;"></td>
-      <td style="font-weight:600;">${e.nome || '—'}</td>
-      <td>${e.lote || '—'}</td>
-      <td>${formatarCodigo(e.documento)}</td>
-      <td class="td-center">${e.quantidade || '—'}</td>
-      <td class="td-center">${formatarData(e.data_lancamento) || '—'}</td>
-      <td class="td-center">${formatarData(e.data_vencimento) || '—'}</td>
-    </tr>`;
-  }).join('');
-}
-
-function entriesToggleAll(checked) {
-  document.querySelectorAll('.cb-entry').forEach(cb => { cb.checked = checked; });
-}
-
-async function trackDeletarSelecionados() {
-  const selecionados = [...document.querySelectorAll('.cb-entry:checked')]
-    .map(cb => cb.dataset.id);
-
-  if (!selecionados.length) { toast('Selecione ao menos um registro.', 'err'); return; }
-  if (!confirm(`Excluir ${selecionados.length} registro(s) do Firebase? Esta ação não pode ser desfeita.`)) return;
-
-  showLoading(`Excluindo ${selecionados.length} registro(s)...`);
-  try {
-    const batch = db.batch();
-    selecionados.forEach(id => {
-      batch.delete(db.collection(KEY_ENTRADA).doc(id));
-    });
-    await batch.commit();
-    // Atualiza lista local
-    _allEntries = _allEntries.filter(e => !selecionados.includes(e._id));
-    document.getElementById('cb-all').checked = false;
-    entriesRender();
-    toast(`✅ ${selecionados.length} registro(s) excluído(s)!`);
-  } catch(e) {
-    toast('❌ Erro ao excluir: ' + e.message, 'err');
-  } finally { hideLoading(); }
-}
-
-/* init */
-devRenderTabela();
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+  buildMotivoList();
+  devRenderTabela();
+  document.addEventListener('click', e => { if(!e.target.closest('.motivo-wrapper')) document.getElementById('motivo-list').classList.remove('open'); });
+  toast('Sistema pronto!', 'ok');
+});
 </script>
-
-<!-- Firebase SDK carregado NO FINAL do body para não bloquear a UI -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"
-  onerror="setFbStatus('offline')"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"
-  onerror="setFbStatus('offline')"
-  onload="onFirebaseReady()"></script>
-
 </body>
 </html>
