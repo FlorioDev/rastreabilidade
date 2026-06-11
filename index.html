@@ -89,8 +89,7 @@ body {
 /* ════════════════════════════════════
    MÓDULOS
 ════════════════════════════════════ */
-.module-screen { display: none; flex-direction: column; min-height: 100vh; }
-.module-screen.active { display: flex; }
+/* módulo screens controlados pelas classes .hidden / .active acima */
 
 /* HEADER */
 .mod-header {
@@ -489,6 +488,11 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
 @media (max-width: 900px) {
   #mod-track .mod-body { flex-direction: column; overflow-y: auto; }
 }
+
+/* Navegação por classe — nunca por style inline */
+#home-screen.hidden          { display: none !important; }
+.module-screen               { display: none; }
+.module-screen.active        { display: flex; flex-direction: column; min-height: 100vh; }
 </style>
 </head>
 <body>
@@ -913,13 +917,13 @@ document.head.appendChild(spinStyle);
    NAVEGAÇÃO
 ════════════════════════════════════════════════════════ */
 function openModule(id) {
-  document.getElementById('home-screen').style.display = 'none';
+  document.getElementById('home-screen').classList.add('hidden');
   document.querySelectorAll('.module-screen').forEach(el => el.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 function closeModule() {
   document.querySelectorAll('.module-screen').forEach(el => el.classList.remove('active'));
-  document.getElementById('home-screen').style.display = 'flex';
+  document.getElementById('home-screen').classList.remove('hidden');
 }
 
 /* ════════════════════════════════════════════════════════
