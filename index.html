@@ -389,10 +389,32 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   width: 8px; height: 8px; border-radius: 50%;
   flex-shrink: 0;
 }
+.firebase-status.connecting {
+  background: #fef9c3; color: #854d0e; border-color: #fde047;
+}
+.firebase-status.connecting .dot {
+  background: #ca8a04;
+  animation: pulse-dot 1.2s ease-in-out infinite;
+}
 .firebase-status.online {
   background: #dcfce7; color: #14532d; border-color: #86efac;
 }
 .firebase-status.online .dot { background: #16a34a; }
+.firebase-status.offline {
+  background: #fee2e2; color: #7f1d1d; border-color: #fca5a5;
+}
+.firebase-status.offline .dot { background: #dc2626; }
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .4; transform: scale(.7); }
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#loading-overlay {
+  position:fixed;inset:0;background:rgba(255,255,255,.75);
+  z-index:99998;display:flex;align-items:center;justify-content:center;
+  font-size:1rem;font-weight:700;color:#1a2a4a;gap:12px;
+  font-family:'Segoe UI',sans-serif;
+}
 
 #modal-entradas .modal-box { width: 780px; }
 .entries-filters {
@@ -450,7 +472,7 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   <div class="mod-header">
     <button class="back-btn" onclick="closeModule()">← Voltar</button>
     <span class="mod-header-title">📦 Rastreabilidade</span>
-    <span class="firebase-status online" id="fb-status-track"><span class="dot"></span><span class="label">Online</span></span>
+    <span class="firebase-status connecting" id="fb-status-track"><span class="dot"></span><span class="label">Conectando...</span></span>
     <span class="mod-header-clock" id="clock-track"></span>
   </div>
   <div class="mod-body">
@@ -499,7 +521,7 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   <div class="mod-header">
     <button class="back-btn" onclick="closeModule()">← Voltar</button>
     <span class="mod-header-title">🔍 Comparador de Orçamento</span>
-    <span class="firebase-status online" id="fb-status-comp"><span class="dot"></span><span class="label">Online</span></span>
+    <span class="firebase-status connecting" id="fb-status-comp"><span class="dot"></span><span class="label">Conectando...</span></span>
     <span class="mod-header-clock" id="clock-comp"></span>
   </div>
   <div class="mod-body">
@@ -589,7 +611,7 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   <div class="mod-header">
     <button class="back-btn" onclick="closeModule()">← Voltar</button>
     <span class="mod-header-title">↩️ Sistema de Devolução</span>
-    <span class="firebase-status online" id="fb-status-dev"><span class="dot"></span><span class="label">Online</span></span>
+    <span class="firebase-status connecting" id="fb-status-dev"><span class="dot"></span><span class="label">Conectando...</span></span>
     <span class="mod-header-clock" id="clock-dev"></span>
   </div>
   <div class="mod-body">
@@ -731,16 +753,94 @@ function formatarCodigo(val) { return String(val ?? '').split('.')[0]; }
 function formatarData(str) { if(!str) return str; const m = str.match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${m[1]}` : str; }
 function cleanProductName(name) { return name.trim().replace(/\s+CX$/i, ''); }
 
-// STORAGE LOCAL (fallback)
-const STORAGE = {
-  get(key) { return JSON.parse(localStorage.getItem(key) || '[]'); },
-  set(key, data) { localStorage.setItem(key, JSON.stringify(data)); },
-  add(key, item) { const arr = this.get(key); arr.push(item); this.set(key, arr); return arr.length; },
-  setAll(key, arr) { this.set(key, arr); }
+// ============================================
+// FIREBASE – inicialização segura (não bloqueia navegação)
+// ============================================
+const firebaseConfig = {
+  apiKey:            "AIzaSyCdwNdKR8zy_Xgt0My0Cl0-zPZJpZyRX8M",
+  authDomain:        "rastreabilidade-14d94.firebaseapp.com",
+  projectId:         "rastreabilidade-14d94",
+  storageBucket:     "rastreabilidade-14d94.firebasestorage.app",
+  messagingSenderId: "114086633192",
+  appId:             "1:114086633192:web:af141dec1c926e02f1335d"
 };
 
+function initFirebase() {
+  try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+    startFbStatusWatcher();
+  } catch(e) {
+    console.warn('Firebase não inicializado:', e.message);
+    setFbStatus('offline');
+  }
+}
+function onFirebaseReady() { initFirebase(); }
+
+function setFbStatus(status) {
+  const ids = ['fb-status-track', 'fb-status-comp', 'fb-status-dev'];
+  const labels = { connecting: 'Conectando...', online: 'Firebase Online', offline: 'Firebase Offline' };
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = `firebase-status ${status}`;
+    el.querySelector('.label').textContent = labels[status];
+  });
+}
+function startFbStatusWatcher() {
+  db.collection('_ping').doc('_ping').onSnapshot(
+    () => setFbStatus('online'),
+    ()  => setFbStatus('offline')
+  );
+  window.addEventListener('online',  () => setFbStatus('online'));
+  window.addEventListener('offline', () => setFbStatus('offline'));
+  setTimeout(() => {
+    const el = document.getElementById('fb-status-track');
+    if (el && el.classList.contains('connecting')) setFbStatus('offline');
+  }, 8000);
+}
+
+// ============================================
+// STORAGE – Firestore async (substitui localStorage)
+// ============================================
+const STORAGE = {
+  async get(colecao) {
+    if (!db) throw new Error('Firebase não disponível. Verifique sua conexão.');
+    const snap = await db.collection(colecao).get();
+    return snap.docs.map(d => ({ ...d.data(), _id: d.id }));
+  },
+  async add(colecao, item) {
+    if (!db) throw new Error('Firebase não disponível. Verifique sua conexão.');
+    const ref = await db.collection(colecao).add(item);
+    return ref.id;
+  },
+  async deleteIds(colecao, ids) {
+    if (!db) throw new Error('Firebase não disponível. Verifique sua conexão.');
+    const batch = db.batch();
+    ids.forEach(id => batch.delete(db.collection(colecao).doc(id)));
+    await batch.commit();
+  }
+};
+
+// ── Indicador visual de carregamento ──
+function showLoading(msg) {
+  let el = document.getElementById('loading-overlay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loading-overlay';
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `<span style="font-size:1.4rem;animation:spin 1s linear infinite;display:inline-block;">⏳</span> ${msg}`;
+  el.style.display = 'flex';
+}
+function hideLoading() {
+  const el = document.getElementById('loading-overlay');
+  if (el) el.style.display = 'none';
+}
+
 // RASTREABILIDADE
-function trackSalvarEntrada() {
+async function trackSalvarEntrada() {
   const entrada = {
     codigo: document.getElementById('t-codigo').value.trim(),
     nome: document.getElementById('t-nome').value.trim(),
@@ -754,64 +854,156 @@ function trackSalvarEntrada() {
   if (!entrada.nome || !entrada.lote || !entrada.quantidade) {
     toast('Preencha Nome, Lote e Quantidade.', 'err'); return;
   }
-  STORAGE.add('produtos_entrada', entrada);
-  ['t-codigo','t-nome','t-documento','t-quantidade','t-lancamento','t-vencimento','t-lote'].forEach(id => document.getElementById(id).value = '');
-  toast('✅ Entrada cadastrada com sucesso!');
+  showLoading('Salvando entrada...');
+  try {
+    await STORAGE.add('produtos_entrada', entrada);
+    ['t-codigo','t-nome','t-documento','t-quantidade','t-lancamento','t-vencimento','t-lote'].forEach(id => document.getElementById(id).value = '');
+    toast('✅ Entrada cadastrada com sucesso!');
+  } catch(e) {
+    toast('❌ Erro ao salvar: ' + e.message, 'err');
+  } finally { hideLoading(); }
 }
 
 function trackImportarPlanilha(input) {
   const file = input.files[0];
   if(!file) return;
-  toast('Importação de planilha disponível na versão completa com Firebase', 'ok');
+
+  if (file.name.endsWith('.csv')) {
+    const reader = new FileReader();
+    reader.onload = async e => {
+      const lines = e.target.result.split('\n');
+      const delim = lines[0].includes(';') ? ';' : ',';
+      let count = 0;
+      showLoading('Importando CSV...');
+      try {
+        const promises = [];
+        for (let i = 2; i < lines.length; i++) {
+          const cols = lines[i].split(delim);
+          if (cols.length < 24) continue;
+          promises.push(STORAGE.add('produtos_entrada', {
+            codigo:          formatarCodigo(cols[5]?.trim()),
+            nome:            cols[6]?.trim() || '',
+            documento:       formatarCodigo(cols[8]?.trim()),
+            quantidade:      cols[9]?.trim() || '',
+            data_lancamento: cols[15]?.trim() || '',
+            data_vencimento: cols[21]?.trim() || '',
+            lote:            cols[23]?.trim() || '',
+            criado_em: new Date().toISOString(),
+          }));
+          count++;
+        }
+        await Promise.all(promises);
+        toast(`✅ ${count} registros importados do CSV!`);
+      } catch(err) {
+        toast('❌ Erro ao importar: ' + err.message, 'err');
+      } finally { hideLoading(); }
+    };
+    reader.readAsText(file, 'UTF-8');
+  } else {
+    const carregarXLSX = () => trackLerExcel(file);
+    if (!window.XLSX) {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload = carregarXLSX;
+      document.head.appendChild(s);
+    } else {
+      carregarXLSX();
+    }
+  }
   input.value = '';
 }
 
-function trackAtualizarLista() {
+function trackLerExcel(file) {
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const wb   = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+    const ws   = wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+    let count = 0;
+    showLoading('Importando Excel...');
+    try {
+      const promises = [];
+      for (let i = 2; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r || r.length < 24) continue;
+        promises.push(STORAGE.add('produtos_entrada', {
+          codigo:          formatarCodigo(String(r[5] ?? '')),
+          nome:            String(r[6] ?? ''),
+          documento:       formatarCodigo(String(r[8] ?? '')),
+          quantidade:      String(r[9] ?? ''),
+          data_lancamento: String(r[15] ?? ''),
+          data_vencimento: String(r[21] ?? ''),
+          lote:            String(r[23] ?? ''),
+          criado_em: new Date().toISOString(),
+        }));
+        count++;
+      }
+      await Promise.all(promises);
+      toast(`✅ ${count} registros importados do Excel!`);
+    } catch(err) {
+      toast('❌ Erro ao importar: ' + err.message, 'err');
+    } finally { hideLoading(); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function trackAtualizarLista() {
   const lote = document.getElementById('t-pesq-lote').value.toLowerCase();
   const ac = document.getElementById('resumo-autocomplete');
   if(!lote) { ac.style.display = 'none'; return; }
-  const todas = STORAGE.get('produtos_entrada');
-  const nomes = [...new Set(todas.filter(e => e.lote.toLowerCase().includes(lote)).map(e => e.nome))].sort();
-  if(!nomes.length) { ac.style.display = 'none'; return; }
-  ac.innerHTML = '';
-  nomes.forEach(n => {
-    const d = document.createElement('div');
-    d.textContent = n;
-    d.onclick = () => { document.getElementById('t-pesq-nome').value = n; ac.style.display = 'none'; };
-    ac.appendChild(d);
-  });
-  ac.style.display = 'block';
+  try {
+    const todas = await STORAGE.get('produtos_entrada');
+    const nomes = [...new Set(todas.filter(e => e.lote.toLowerCase().includes(lote)).map(e => e.nome))].sort();
+    if(!nomes.length) { ac.style.display = 'none'; return; }
+    ac.innerHTML = '';
+    nomes.forEach(n => {
+      const d = document.createElement('div');
+      d.textContent = n;
+      d.onclick = () => { document.getElementById('t-pesq-nome').value = n; ac.style.display = 'none'; };
+      ac.appendChild(d);
+    });
+    ac.style.display = 'block';
+  } catch(e) { ac.style.display = 'none'; }
 }
 
-function trackBuscarResumo() {
+async function trackBuscarResumo() {
   const nome = document.getElementById('t-pesq-nome').value.trim();
   const lote = document.getElementById('t-pesq-lote').value.trim();
-  const entradas = STORAGE.get('produtos_entrada').filter(e => e.nome === nome && e.lote === lote);
-  if(!entradas.length) { toast('Produto ou lote não encontrado.', 'err'); return; }
-  const entrada = entradas[0];
-  const produzido = parseInt(entrada.quantidade) || 0;
-  const saidas = STORAGE.get('produtos_saida').filter(s => s.nome === nome && s.lote === lote);
-  const devolucoes = STORAGE.get('produtos_devolucao').filter(d => d.nome === nome && d.lote === lote);
-  const totalSaida = saidas.reduce((a,s) => a + (parseInt(s.quantidade)||0), 0);
-  const totalDev = devolucoes.reduce((a,d) => a + (parseInt(d.quantidade)||0), 0);
-  const saldoAtual = produzido - totalSaida + totalDev;
-  const devPorDoc = {};
-  devolucoes.forEach(d => { const doc = formatarCodigo(d.documento); devPorDoc[doc] = (devPorDoc[doc]||0) + (parseInt(d.quantidade)||0); });
-  const saldoColor = saldoAtual > 0 ? '#155724' : saldoAtual === 0 ? '#6b7a99' : '#721c24';
-  const div = document.getElementById('track-result');
-  let html = `<table style="width:100%"><tr><td style="color:#6b7a99;">Código</td><td>${formatarCodigo(entrada.codigo)}</td></tr>
-    <tr><td style="color:#6b7a99;">Produto</td><td><strong>${entrada.nome}</strong></td></tr>
-    <tr><td style="color:#6b7a99;">Documento</td><td>${formatarCodigo(entrada.documento)}</td></tr>
-    <tr><td style="color:#6b7a99;">Lote</td><td>${entrada.lote}</td></tr></table>
-    <hr><table><tr><td>Produzido:</td><td><strong>${produzido}</strong></td></tr>
-    <tr><td>Total Saídas:</td><td><strong>${totalSaida}</strong></td></tr>
-    <tr><td>Devoluções:</td><td><strong>${totalDev}</strong></td></tr>
-    <tr><td>Saldo Atual:</td><td style="color:${saldoColor}"><strong>${saldoAtual}</strong></td></tr></table>
-    <hr><div><strong>Saídas por Orçamento:</strong></div>`;
-  if(!saidas.length) html += `<div>Nenhuma saída registrada.</div>`;
-  else { saidas.forEach(s => { const doc = formatarCodigo(s.documento); const qtd = parseInt(s.quantidade)||0; const dev = devPorDoc[doc]||0; html += `<div>Orç. ${doc}: ${qtd} UN${dev>0?` (Dev: ${dev})`:''}</div>`; }); }
-  div.innerHTML = html;
-  trackResultData = { entrada, produzido, totalSaida, totalDev, saldoAtual, saidas, devPorDoc };
+  if (!nome || !lote) { toast('Preencha Nome e Lote para buscar.', 'err'); return; }
+  showLoading('Buscando dados...');
+  try {
+    const [todasEntradas, todasSaidas, todasDevolucoes] = await Promise.all([
+      STORAGE.get('produtos_entrada'), STORAGE.get('produtos_saida'), STORAGE.get('produtos_devolucao')
+    ]);
+    const entradas = todasEntradas.filter(e => e.nome === nome && e.lote === lote);
+    if(!entradas.length) { toast('Produto ou lote não encontrado.', 'err'); return; }
+    const entrada = entradas[0];
+    const produzido = parseInt(entrada.quantidade) || 0;
+    const saidas = todasSaidas.filter(s => s.nome === nome && s.lote === lote);
+    const devolucoes = todasDevolucoes.filter(d => d.nome === nome && d.lote === lote);
+    const totalSaida = saidas.reduce((a,s) => a + (parseInt(s.quantidade)||0), 0);
+    const totalDev = devolucoes.reduce((a,d) => a + (parseInt(d.quantidade)||0), 0);
+    const saldoAtual = produzido - totalSaida + totalDev;
+    const devPorDoc = {};
+    devolucoes.forEach(d => { const doc = formatarCodigo(d.documento); devPorDoc[doc] = (devPorDoc[doc]||0) + (parseInt(d.quantidade)||0); });
+    const saldoColor = saldoAtual > 0 ? '#155724' : saldoAtual === 0 ? '#6b7a99' : '#721c24';
+    const div = document.getElementById('track-result');
+    let html = `<table style="width:100%"><tr><td style="color:#6b7a99;">Código</td><td>${formatarCodigo(entrada.codigo)}</td></tr>
+      <tr><td style="color:#6b7a99;">Produto</td><td><strong>${entrada.nome}</strong></td></tr>
+      <tr><td style="color:#6b7a99;">Documento</td><td>${formatarCodigo(entrada.documento)}</td></tr>
+      <tr><td style="color:#6b7a99;">Lote</td><td>${entrada.lote}</td></tr></table>
+      <hr><table><tr><td>Produzido:</td><td><strong>${produzido}</strong></td></tr>
+      <tr><td>Total Saídas:</td><td><strong>${totalSaida}</strong></td></tr>
+      <tr><td>Devoluções:</td><td><strong>${totalDev}</strong></td></tr>
+      <tr><td>Saldo Atual:</td><td style="color:${saldoColor}"><strong>${saldoAtual}</strong></td></tr></table>
+      <hr><div><strong>Saídas por Orçamento:</strong></div>`;
+    if(!saidas.length) html += `<div>Nenhuma saída registrada.</div>`;
+    else { saidas.forEach(s => { const doc = formatarCodigo(s.documento); const qtd = parseInt(s.quantidade)||0; const dev = devPorDoc[doc]||0; html += `<div>Orç. ${doc}: ${qtd} UN${dev>0?` (Dev: ${dev})`:''}</div>`; }); }
+    div.innerHTML = html;
+    trackResultData = { entrada, produzido, totalSaida, totalDev, saldoAtual, saidas, devPorDoc };
+  } catch(e) {
+    toast('❌ Erro ao buscar: ' + e.message, 'err');
+  } finally { hideLoading(); }
 }
 
 function trackGerarPDF() {
@@ -833,10 +1025,19 @@ function trackGerarPDF() {
   win.document.close();
 }
 
-function trackAbrirGerenciar() {
-  _allEntries = STORAGE.get('produtos_entrada');
-  entriesRender();
-  document.getElementById('modal-entradas').classList.add('open');
+async function trackAbrirGerenciar() {
+  showLoading('Carregando entradas...');
+  try {
+    _allEntries = await STORAGE.get('produtos_entrada');
+    document.getElementById('ef-nome').value = '';
+    document.getElementById('ef-lote').value = '';
+    document.getElementById('ef-doc').value = '';
+    document.getElementById('cb-all').checked = false;
+    entriesRender();
+    document.getElementById('modal-entradas').classList.add('open');
+  } catch(e) {
+    toast('❌ Erro ao carregar: ' + e.message, 'err');
+  } finally { hideLoading(); }
 }
 function entriesRender() {
   const fNome = document.getElementById('ef-nome').value.toLowerCase();
@@ -845,22 +1046,28 @@ function entriesRender() {
   const filtrados = _allEntries.filter(e => (!fNome || (e.nome||'').toLowerCase().includes(fNome)) && (!fLote || (e.lote||'').toLowerCase().includes(fLote)) && (!fDoc || (e.documento||'').toLowerCase().includes(fDoc)));
   document.getElementById('entries-count').textContent = `${filtrados.length} de ${_allEntries.length} registros`;
   const tb = document.getElementById('tbody-entries');
-  if(!filtrados.length) { tb.innerHTML = '<tr><td colspan="7">Nenhum registro.</td></tr>'; return; }
+  if(!filtrados.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#a0aec0;padding:20px;">Nenhum registro.</td></tr>'; return; }
   tb.innerHTML = filtrados.map((e,i) => `<tr${i%2?' style="background:#fafbfd;"':''}>
-    <td><input type="checkbox" class="cb-entry" data-id="${i}"></td>
+    <td class="td-center"><input type="checkbox" class="cb-entry" data-id="${e._id}" style="cursor:pointer;width:15px;height:15px;"></td>
     <td>${e.nome||'—'}</td><td>${e.lote||'—'}</td><td>${formatarCodigo(e.documento)}</td>
     <td class="td-center">${e.quantidade||'—'}</td><td class="td-center">${formatarData(e.data_lancamento)||'—'}</td>
     <td class="td-center">${formatarData(e.data_vencimento)||'—'}</td></tr>`).join('');
 }
 function entriesToggleAll(checked) { document.querySelectorAll('.cb-entry').forEach(cb => cb.checked = checked); }
-function trackDeletarSelecionados() {
-  const selecionados = [...document.querySelectorAll('.cb-entry:checked')].map(cb => parseInt(cb.dataset.id)).sort((a,b)=>b-a);
+async function trackDeletarSelecionados() {
+  const selecionados = [...document.querySelectorAll('.cb-entry:checked')].map(cb => cb.dataset.id);
   if(!selecionados.length) { toast('Selecione registros.', 'err'); return; }
-  if(!confirm(`Excluir ${selecionados.length} registro(s)?`)) return;
-  selecionados.forEach(idx => _allEntries.splice(idx,1));
-  STORAGE.setAll('produtos_entrada', _allEntries);
-  entriesRender();
-  toast(`✅ ${selecionados.length} registro(s) excluído(s)!`);
+  if(!confirm(`Excluir ${selecionados.length} registro(s) do Firebase? Esta ação não pode ser desfeita.`)) return;
+  showLoading(`Excluindo ${selecionados.length} registro(s)...`);
+  try {
+    await STORAGE.deleteIds('produtos_entrada', selecionados);
+    _allEntries = _allEntries.filter(e => !selecionados.includes(e._id));
+    document.getElementById('cb-all').checked = false;
+    entriesRender();
+    toast(`✅ ${selecionados.length} registro(s) excluído(s)!`);
+  } catch(e) {
+    toast('❌ Erro ao excluir: ' + e.message, 'err');
+  } finally { hideLoading(); }
 }
 
 // COMPARADOR
@@ -926,19 +1133,24 @@ function compComparar() {
   banner.textContent = hasDivergencia ? '⚠️ DIVERGÊNCIA ENCONTRADA' : '✅ TUDO OK';
   document.querySelectorAll('.comp-tab')[2].click();
 }
-function compFinalizarSalvar() {
+async function compFinalizarSalvar() {
   if(!produtosCaixas.length) { toast('Nenhum dado para salvar.', 'err'); return; }
   if(!compOrcamento) { toast('Nenhum número de orçamento.', 'err'); return; }
-  produtosCaixas.forEach(p => STORAGE.add('produtos_saida', { nome: p.Produto, lote: p.Lote, documento: compOrcamento, quantidade: String(p.Quantidade), criado_em: new Date().toISOString() }));
-  let csv = 'Produto,Lote,Orçamento,Quantidade\n';
-  produtosCaixas.forEach(p => csv += `"${p.Produto}","${p.Lote}","${compOrcamento}","${p.Quantidade}"\n`);
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `Orcamento_${compOrcamento}_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-  toast(`✅ Orçamento ${compOrcamento} salvo e exportado!`);
-  compLimparTudo(true);
+  showLoading('Salvando saídas no Firebase...');
+  try {
+    await Promise.all(produtosCaixas.map(p => STORAGE.add('produtos_saida', { nome: p.Produto, lote: p.Lote, documento: compOrcamento, quantidade: String(p.Quantidade), criado_em: new Date().toISOString() })));
+    let csv = 'Produto,Lote,Orçamento,Quantidade\n';
+    produtosCaixas.forEach(p => csv += `"${p.Produto}","${p.Lote}","${compOrcamento}","${p.Quantidade}"\n`);
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `Orcamento_${compOrcamento}_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    toast(`✅ Orçamento ${compOrcamento} salvo no Firebase e exportado!`);
+    compLimparTudo(true);
+  } catch(e) {
+    toast('❌ Erro ao salvar: ' + e.message, 'err');
+  } finally { hideLoading(); }
 }
 function compLimparTudo(silent=false) {
   if(!silent && !confirm('Limpar todos os dados?')) return;
@@ -1030,7 +1242,7 @@ function devLimpar() {
   document.getElementById('motivo-btn').dataset.selected = '';
   devRenderTabela();
 }
-function devFinalizar() {
+async function devFinalizar() {
   if(!devScanData.length) { toast('Nenhum item escaneado.', 'err'); return; }
   const motivo = document.getElementById('motivo-btn').dataset.selected || '';
   if(!motivo) { toast('Selecione um motivo.', 'err'); return; }
@@ -1040,10 +1252,15 @@ function devFinalizar() {
   const complemento = document.getElementById('dev-complemento').value.trim();
   const agora = new Date().toLocaleString('pt-BR');
   const itensSalvar = [...devScanData];
-  itensSalvar.forEach(item => STORAGE.add('produtos_devolucao', { nome: item.Produto, lote: item.Lote, documento: item['Orçamento/NF'], quantidade: String(item.Quantidade), cliente, responsavel, motivo, complemento, criado_em: new Date().toISOString() }));
-  devGerarPDF(orcamento, cliente, responsavel, motivo, complemento, agora, itensSalvar);
-  toast('✅ Devolução registrada!');
-  devLimpar();
+  showLoading('Salvando devolução no Firebase...');
+  try {
+    await Promise.all(itensSalvar.map(item => STORAGE.add('produtos_devolucao', { nome: item.Produto, lote: item.Lote, documento: item['Orçamento/NF'], quantidade: String(item.Quantidade), cliente, responsavel, motivo, complemento, criado_em: new Date().toISOString() })));
+    devGerarPDF(orcamento, cliente, responsavel, motivo, complemento, agora, itensSalvar);
+    toast('✅ Devolução registrada no Firebase!');
+    devLimpar();
+  } catch(e) {
+    toast('❌ Erro ao salvar: ' + e.message, 'err');
+  } finally { hideLoading(); }
 }
 function devGerarPDF(orcamento, cliente, responsavel, motivo, complemento, agora, itens) {
   const win = window.open('', '_blank');
@@ -1068,5 +1285,13 @@ document.addEventListener('DOMContentLoaded', function() {
   toast('Sistema pronto!', 'ok');
 });
 </script>
+
+<!-- Firebase SDK carregado NO FINAL do body para não bloquear a UI -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"
+  onerror="setFbStatus('offline')"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"
+  onerror="setFbStatus('offline')"
+  onload="onFirebaseReady()"></script>
+
 </body>
 </html>
