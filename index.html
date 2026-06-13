@@ -531,6 +531,7 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
         <button class="comp-tab" onclick="compTab(this,'tab-lote')">📦 Lote</button>
         <button class="comp-tab" onclick="compTab(this,'tab-comparacao')">📊 Comparação</button>
       </div>
+      <button class="btn btn-gray" style="width:auto;padding:7px 16px;" onclick="abrirModalMultiplicadores()">⚙️ Multiplicadores (Cx → Un)</button>
       <div id="comp-status-banner"></div>
     </div>
     <div id="tab-qr" class="comp-tab-content active">
@@ -560,15 +561,15 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
       </div>
       <div class="table-wrapper" style="flex:1;min-height:180px;">
         <table>
-          <thead><tr><th>Produto</th><th class="td-center">Quantidade</th><th class="td-center">Lote</th><th class="td-center">Ações</th></tr></thead>
-          <tbody id="tbody-caixas"><tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:24px;">Nenhum dado processado ainda.</td></tr></tbody>
+          <thead><tr><th>Produto</th><th class="td-center">Caixas</th><th class="td-center">Multiplicador</th><th class="td-center">Unidades</th><th class="td-center">Lote</th><th class="td-center">Ações</th></tr></thead>
+          <tbody id="tbody-caixas"><tr><td colspan="6" style="text-align:center;color:#a0aec0;padding:24px;">Nenhum dado processado ainda.</td></tr></tbody>
         </table>
       </div>
     </div>
     <div id="tab-comparacao" class="comp-tab-content">
       <div class="table-wrapper" style="flex:1;min-height:180px;">
         <table>
-          <thead><tr><th>Produto</th><th class="td-center">Qtd Orçamento</th><th class="td-center">Qtd Caixas</th><th class="td-center">Status</th></tr></thead>
+          <thead><tr><th>Produto</th><th class="td-center">Qtd Orçamento (Un)</th><th class="td-center">Qtd Caixas (Un)</th><th class="td-center">Status</th></tr></thead>
           <tbody id="tbody-comparacao"><tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:24px;">Clique em "Comparar Dados" para gerar a comparação.</td></tr></tbody>
         </table>
       </div>
@@ -702,6 +703,40 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   </div>
 </div>
 
+<div id="modal-multiplicadores" class="modal-overlay">
+  <div class="modal-box" style="width:780px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="modal-title">⚙️ Multiplicadores (Caixa → Unidades)</div>
+      <div id="mult-count" style="margin-left:auto;font-size:0.78rem;color:#6b7a99;font-weight:700;"></div>
+    </div>
+    <div style="font-size:0.78rem;color:#6b7a99;">Cada produto escaneado no Comparador conta como <strong>1 caixa</strong>. Aqui você define quantas <strong>unidades</strong> existem dentro de cada caixa, para conversão automática.</div>
+    <div class="entries-filters">
+      <input id="mf-busca" type="text" placeholder="Filtrar por nome do produto..." oninput="multRender()">
+      <button class="btn btn-blue" style="width:auto;padding:7px 18px;flex-shrink:0;" onclick="multAbrirNovo()">＋ Novo Produto</button>
+    </div>
+    <div id="mult-form" style="display:none;background:#f8fafc;border:1px solid #d0d8e8;border-radius:8px;padding:12px;gap:10px;flex-direction:column;">
+      <div id="mult-form-title" style="font-size:0.8rem;font-weight:800;color:#1a2a4a;text-transform:uppercase;letter-spacing:.5px;">Novo Produto</div>
+      <div class="dev-grid">
+        <div class="field-group"><label>Nome do Produto</label><input id="mult-nome" type="text" placeholder="Ex: GRISSINI NATURAL 120G"></div>
+        <div class="field-group"><label>Unidades por Caixa</label><input id="mult-valor" type="number" min="1" value="1"></div>
+      </div>
+      <div class="modal-buttons">
+        <button class="btn btn-gray" onclick="multCancelarForm()">Cancelar</button>
+        <button class="btn btn-blue" onclick="multSalvar()">Salvar</button>
+      </div>
+    </div>
+    <div class="table-wrapper" style="max-height:380px;overflow-y:auto;">
+      <table>
+        <thead><tr><th>Produto</th><th class="td-center" style="width:140px;">Multiplicador</th><th class="td-center" style="width:90px;">Ações</th></tr></thead>
+        <tbody id="tbody-mult"></tbody>
+      </table>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn btn-gray" onclick="fecharModalMultiplicadores()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -715,6 +750,47 @@ let compOrcamento = '', produtosOrcamento = [], produtosCaixas = [];
 let devScanData = [], devSelectedIdx = -1;
 let _allEntries = [];
 let _modalEditIdx = null;
+let multiplicadores = {};   // { "NOME PRODUTO": multiplicador }
+let _multEditId = null;
+let _multAll = [];
+
+// Lista inicial de multiplicadores (Caixa → Unidades), vinda do Conversor.pyw
+const MULTIPLICADORES_SEED = [
+  ["BROA DE FUBA 90G CF", 30], ["COOKIES BAUNILHA C/ GOTAS CHOC. 90G CF", 30], ["COOKIES CHOCOLATE C/ GOTAS CHOC.90G CF", 30],
+  ["CROUTON ALHO 250G", 10], ["CROUTON ALHO 500G", 10], ["CROUTON ALHO 500G INST. CF", 5],
+  ["CROUTON FEITO COM ALHO 100G CF", 20], ["CROUTON INTEGRAL ALHO 500G", 10], ["CROUTON INTEGRAL ALHO 500G INST. CF", 5],
+  ["CROUTON INTEGRAL ALHO 500G JF", 5], ["CROUTON INTEGRAL FEITO COM ALHO 100G CF", 20], ["CROUTON NATURAL 120G", 15],
+  ["CROUTON NATURAL 500G", 10], ["CROUTON NATURAL 500G INST. CF", 5], ["CROUTON TEMPERADO 100G CF", 20],
+  ["CROUTON TEMPERADO 120G", 15], ["CROUTON TEMPERADO 500G", 10], ["CROUTON TEMPERADO 500G INST. CF", 5],
+  ["CROUTON TRADICIONAL 100G CF", 20], ["GRISSINI ALHO 120G", 15], ["GRISSINI CEBOLA 120G", 15],
+  ["GRISSINI FEITO COM ALECRIM 90G CF", 20], ["GRISSINI FEITO COM MULTIGRAOS 90G CF", 20], ["GRISSINI INT. SABOR TOMATE SECO 90G CF", 20],
+  ["GRISSINI INTEGRAL GERGELIM 120G", 15], ["GRISSINI INTEGRAL PARMESAO 120G", 15], ["GRISSINI INTEGRAL TOMATE SECO 120G", 15],
+  ["GRISSINI MULTIGRAOS 120G", 15], ["GRISSINI NATURAL 120G", 15], ["GRISSINI NATURAL 120G CROSTITI", 15],
+  ["GRISSINI NATURAL 200G", 20], ["GRISSINI PARMESAO 120G", 15], ["GRISSINI PARMESAO 120G CROSTITI", 15],
+  ["GRISSINI PARMESAO 200G", 20], ["GRISSINI PIZZA 120G", 15], ["GRISSINI SABOR ALHO E SALSA 90G CF", 20],
+  ["GRISSINI SABOR PARMESAO 90G CF", 20], ["GRISSINI SABOR TRADICIONAL 90G CF", 20], ["GRISSINI TOMATE SECO 120G", 15],
+  ["PANETTONE C/ GTS CHOC C/COB DE AMENDOAS 1K", 6], ["PANETTONE CEREJA 700G CF", 8], ["PANETTONE CHOCOLATE CF 1K", 6],
+  ["PANETTONE CHOCOLATE E DAMASCO 700G CF", 8], ["PANETTONE FRUTAS CF 1K", 6], ["PANETTONE FRUTAS, PASSAS, DAMASCO COB AMENDOAS 1K", 6],
+  ["PAO TIPO SUECO GERGELIM 180G", 12], ["PAO TIPO SUECO INTEGRAL 180G", 12], ["PAO TIPO SUECO LINHACA 180G", 12],
+  ["PAO TIPO SUECO MULTIGRAOS 180G", 12], ["TORRADA 4 QUEIJOS 100G", 15], ["TORRADA 4 QUEIJOS 70G RR", 20],
+  ["TORRADA ALHO 100G", 15], ["TORRADA ALHO 400G", 10], ["TORRADA ALHO 400G INST. CF", 5],
+  ["TORRADA ALHO 70G RR", 20], ["TORRADA ALHO E SALSA 100G MINAS", 15], ["TORRADA AZEITONAS PRETAS 100G", 15],
+  ["TORRADA CEBOLA 100G", 15], ["TORRADA CEBOLA 400G INST. CF", 5], ["TORRADA CEBOLA 70G RR", 20],
+  ["TORRADA NATURAL 400G", 10], ["TORRADA NATURAL 400G INST. CF", 5], ["TORRADA NATURAL 70G RR", 20],
+  ["TORRADA NATURAL AMANTEIGADA 100G", 15], ["TORRADA OREGANO 70G RR", 20], ["TORRADA PARMESAO 100G", 15],
+  ["TORRADA PARMESAO 400G", 10], ["TORRADA PARMESAO 400G INST. CF", 5], ["TORRADA PARMESAO 70G RR", 20],
+  ["TORRADA RABANADA 230G CF", 12], ["TORRADA SABOR 4 QUEIJOS 70G CF", 20], ["TORRADA SABOR AMANTEIGADA 70G CF", 20],
+  ["TORRADA SABOR BRUSQUETA 70G CF", 20], ["TORRADA SABOR OREGANO 70G CF", 20], ["TORRADA SABOR PROVOLONE 70G CF", 20],
+  ["TORRADA SABOR RABANADA 90G CF", 20], ["TORRADA TOMATE 70G RR", 20], ["TORRADA TOMATE SECO 100G", 15],
+  ["TORRADA TOMATE SECO 400G INST. CF", 5], ["TOSTATA ALECRIM 180G", 10], ["TOSTATA ALECRIM 180G LA PETISSE", 10],
+  ["TOSTATA ALECRIM 180G OBA", 10], ["TOSTATA AZEITONA PRETA 180G", 10], ["TOSTATA AZEITONA PRETA 180G OBA", 10],
+  ["TOSTATA FEITO C ALECRIM 180G CF", 10], ["TOSTATA FEITO C PARMESAO 180G CF", 10], ["TOSTATA FEITO COM GERGELIM 180G CF", 10],
+  ["TOSTATA FEITO COM MANJERICAO 180G CF", 10], ["TOSTATA PARMESAO 180G LA PETISSE", 10], ["TOSTATA PARMESAO 180G OBA", 10],
+  ["TOSTATA S. ALECRIM 180G MAMBO", 10], ["TOSTATA S. AZEITONAS PRETAS 180G MAMBO", 10], ["TOSTATA S. TOMATE SECO 180G MAMBO", 10],
+  ["TOSTATA S. TRADICIONAL 180G MAMBO", 10], ["TOSTATA SABOR AZEITONAS PRETAS 180G CF", 10], ["TOSTATA SABOR TOMATE SECO 180G CF", 10],
+  ["TOSTATA SABOR TRADICIONAL 180G CF", 10], ["TOSTATA TOMATE 180G LA PETISSE", 10], ["TOSTATA TOMATE SECO 180G", 10],
+  ["TOSTATA TOMATE SECO 180G OBA", 10], ["TOSTATA TRADICIONAL 180G OBA", 10]
+];
 
 const motivos = ["Alteracao de qualidade","Atraso no agendamento","Avaria no transporte","Baixa rotatividade","Cancelamento antes da entrega","Carga incompleta","Carga molhada","Cliente nao aceita substituicao","Cliente sem condicoes de recebimento","Defeito de fabricacao","Devolucao para troca","Devolucao por desacordo comercial","Divergencia comercial","Divergencia entre pedido e nota fiscal","Embalagem violada","Endereco incorreto","Entrega fora do prazo","Entrega sem autorizacao","Envio para cliente incorreto","Erro operacional interno","Estabelecimento fechado","Excesso de estoque","Falha de fechamento do pacote","Falta de espaco para armazenamento","Faturamento incorreto","Inversao de produtos","Motivo em analise","Pedido duplicado","Produto nao solicitado","Produto vencido","Quantidade divergente","Recusa no recebimento","Volume extraviado"];
 
@@ -771,6 +847,7 @@ function initFirebase() {
     db = firebase.firestore();
     db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
     startFbStatusWatcher();
+    carregarMultiplicadores();
   } catch(e) {
     console.warn('Firebase não inicializado:', e.message);
     setFbStatus('offline');
@@ -1010,18 +1087,258 @@ function trackGerarPDF() {
   if(!trackResultData) { toast('Faça uma busca primeiro.', 'err'); return; }
   const { entrada, produzido, totalSaida, totalDev, saldoAtual, saidas, devPorDoc } = trackResultData;
   const win = window.open('', '_blank');
-  const hoje = new Date().toLocaleDateString('pt-BR');
-  const saidasHtml = saidas.map(s => `<tr><td>Orçamento: ${formatarCodigo(s.documento)}</td><td>${parseInt(s.quantidade)||0} UN${devPorDoc[formatarCodigo(s.documento)]?` (Dev: ${devPorDoc[formatarCodigo(s.documento)]})`:''}</td></tr>`).join('');
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Rastreabilidade</title><style>body{font-family:Arial;margin:30px;}table{width:100%;border-collapse:collapse;}td{padding:4px;}</style></head><body>
-    <h1>Rastreabilidade</h1><div>${hoje}</div><hr>
-    <table><tr><td>Código:</td><td>${formatarCodigo(entrada.codigo)}</td></tr>
-    <tr><td>Produto:</td><td>${entrada.nome}</td></tr>
-    <tr><td>Documento:</td><td>${formatarCodigo(entrada.documento)}</td></tr>
-    <tr><td>Lote:</td><td>${entrada.lote}</td></tr></table><hr>
-    <table><tr><td>Produzido:</td><td>${produzido}</td></tr><tr><td>Total Saídas:</td><td>${totalSaida}</td></tr>
-    <tr><td>Devoluções:</td><td>${totalDev}</td></tr><tr><td>Saldo Atual:</td><td><b>${saldoAtual}</b></td></tr></table><hr>
-    <b>Saídas por Orçamento:</b><table>${saidasHtml}</table>
-    <button onclick="window.print()">Imprimir</button></body></html>`);
+  const agora = new Date();
+  const dataFmt = agora.toLocaleDateString('pt-BR');
+  const horaFmt = agora.toLocaleTimeString('pt-BR');
+
+  const saldoColor = saldoAtual > 0 ? '#1a7f3c' : saldoAtual === 0 ? '#6b7a99' : '#c0392b';
+  const saldoStatus = saldoAtual > 0 ? 'EM ESTOQUE' : saldoAtual === 0 ? 'ESGOTADO' : 'SALDO NEGATIVO';
+
+  const saidasRows = saidas.length
+    ? saidas.map((s, i) => {
+        const doc = formatarCodigo(s.documento);
+        const qtd = parseInt(s.quantidade) || 0;
+        const dev = devPorDoc[doc] || 0;
+        return `<tr class="${i%2?'alt':''}">
+          <td>${doc}</td>
+          <td class="num">${qtd}</td>
+          <td class="num">${dev > 0 ? dev : '—'}</td>
+          <td class="num">${qtd - dev}</td>
+        </tr>`;
+      }).join('')
+    : `<tr><td colspan="4" class="empty">Nenhuma saída registrada para este lote.</td></tr>`;
+
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+  <title>Relatório de Rastreabilidade – ${entrada.nome}</title>
+  <style>
+    @page { size: A4; margin: 14mm 16mm; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #1a1d23;
+      font-size: 11px;
+      line-height: 1.5;
+      margin: 0;
+    }
+    /* CABEÇALHO */
+    .header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      border-bottom: 3px solid #1a7f3c;
+      padding-bottom: 10px; margin-bottom: 16px;
+    }
+    .header .brand { display:flex; flex-direction:column; }
+    .header .brand .logo {
+      font-size: 22px; font-weight: 900; letter-spacing: 3px; color: #1a2a4a;
+    }
+    .header .brand .sub {
+      font-size: 10px; color: #6b7a99; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 2px;
+    }
+    .header .meta { text-align: right; font-size: 10px; color: #6b7a99; }
+    .header .meta .title {
+      font-size: 15px; font-weight: 800; color: #1a2a4a; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px;
+    }
+
+    /* SEÇÕES */
+    .section-title {
+      font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+      color: #1a7f3c; border-bottom: 1.5px solid #d0d8e8;
+      padding-bottom: 4px; margin: 18px 0 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .section-title:first-of-type { margin-top: 0; }
+    .section-title .ico { font-size: 13px; }
+
+    /* GRID DE IDENTIFICAÇÃO */
+    .id-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
+      padding: 12px 14px;
+    }
+    .id-grid .item { display:flex; flex-direction:column; gap:2px; }
+    .id-grid .item.full { grid-column: 1 / -1; }
+    .id-grid .label {
+      font-size: 8.5px; font-weight: 800; color: #6b7a99;
+      text-transform: uppercase; letter-spacing: .8px;
+    }
+    .id-grid .value { font-size: 12px; font-weight: 700; color: #1a2a4a; }
+
+    /* RESUMO – CARDS */
+    .summary-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 10px; margin-bottom: 4px;
+    }
+    .summary-card {
+      border: 1px solid #e2e8f0; border-radius: 6px;
+      padding: 10px 12px; text-align: center;
+      border-top: 4px solid #c8d0de;
+    }
+    .summary-card.produzido { border-top-color: #1a7f3c; }
+    .summary-card.saidas    { border-top-color: #c0392b; }
+    .summary-card.devolucao { border-top-color: #b7791f; }
+    .summary-card.saldo     { border-top-color: ${saldoColor}; }
+    .summary-card .label {
+      font-size: 8.5px; font-weight: 800; color: #6b7a99;
+      text-transform: uppercase; letter-spacing: .8px; margin-bottom: 4px;
+    }
+    .summary-card .value { font-size: 20px; font-weight: 900; color: #1a2a4a; }
+    .summary-card.saldo .value { color: ${saldoColor}; }
+    .summary-card .unit { font-size: 9px; color: #a0aec0; font-weight: 600; }
+
+    /* STATUS BADGE */
+    .status-banner {
+      margin-top: 10px; text-align: center;
+      padding: 7px; border-radius: 6px;
+      font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+      color: ${saldoColor};
+      background: ${saldoAtual > 0 ? '#e6f4ea' : saldoAtual === 0 ? '#eef1f7' : '#fbeaea'};
+      border: 1px solid ${saldoColor};
+    }
+
+    /* TABELA */
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      background: #1a2a4a; color: #fff;
+      font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px;
+      padding: 7px 10px; text-align: left;
+    }
+    thead th.num, td.num { text-align: right; }
+    tbody td { padding: 6px 10px; border-bottom: 1px solid #eef1f7; font-size: 10.5px; }
+    tbody tr.alt { background: #f8fafc; }
+    tbody td.empty { text-align: center; color: #a0aec0; padding: 14px; font-style: italic; }
+    tfoot td {
+      padding: 7px 10px; font-weight: 800; font-size: 10.5px;
+      border-top: 2px solid #1a2a4a; background: #f8fafc;
+    }
+
+    /* CALCULO / FÓRMULA */
+    .formula-box {
+      background: #f8fafc; border: 1px dashed #c8d0de; border-radius: 6px;
+      padding: 10px 14px; font-size: 10px; color: #4a5568;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      flex-wrap: wrap; margin-top: 8px;
+    }
+    .formula-box .num { font-weight: 800; color: #1a2a4a; font-size: 12px; }
+    .formula-box .op { color: #a0aec0; font-weight: 700; }
+    .formula-box .lbl { font-size: 8.5px; color: #6b7a99; text-transform:uppercase; letter-spacing:.5px; display:block; }
+
+    /* RODAPÉ */
+    .footer {
+      margin-top: 28px; padding-top: 10px;
+      border-top: 1px solid #e2e8f0;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 9px; color: #a0aec0;
+    }
+    .footer .sig {
+      display: flex; gap: 40px;
+    }
+    .footer .sig .line {
+      border-top: 1px solid #c8d0de; width: 160px; text-align: center;
+      padding-top: 4px; font-size: 9px; color: #6b7a99;
+    }
+
+    .print-btn {
+      display: block; margin: 20px auto 0; padding: 10px 28px;
+      background: #1a7f3c; color: #fff; border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    @media print { .print-btn { display: none; } }
+  </style></head><body>
+
+    <!-- CABEÇALHO -->
+    <div class="header">
+      <div class="brand">
+        <div class="logo">LNP</div>
+        <div class="sub">Sistema de Controle de Estoque</div>
+      </div>
+      <div class="meta">
+        <div class="title">Relatório de Rastreabilidade</div>
+        <div>Emitido em ${dataFmt} às ${horaFmt}</div>
+        <div>Lote: <strong style="color:#1a2a4a;">${entrada.lote}</strong></div>
+      </div>
+    </div>
+
+    <!-- IDENTIFICAÇÃO DO PRODUTO -->
+    <div class="section-title"><span class="ico">📦</span> Identificação do Produto</div>
+    <div class="id-grid">
+      <div class="item"><span class="label">Código</span><span class="value">${formatarCodigo(entrada.codigo) || '—'}</span></div>
+      <div class="item full"><span class="label">Produto</span><span class="value">${entrada.nome}</span></div>
+      <div class="item"><span class="label">Documento de Entrada</span><span class="value">${formatarCodigo(entrada.documento) || '—'}</span></div>
+      <div class="item"><span class="label">Data de Lançamento</span><span class="value">${formatarData(entrada.data_lancamento) || '—'}</span></div>
+      <div class="item"><span class="label">Data de Vencimento</span><span class="value">${formatarData(entrada.data_vencimento) || '—'}</span></div>
+      <div class="item full"><span class="label">Lote</span><span class="value">${entrada.lote}</span></div>
+    </div>
+
+    <!-- RESUMO QUANTITATIVO -->
+    <div class="section-title"><span class="ico">📊</span> Resumo Quantitativo</div>
+    <div class="summary-grid">
+      <div class="summary-card produzido">
+        <div class="label">Produzido</div>
+        <div class="value">${produzido}</div>
+        <div class="unit">unidades</div>
+      </div>
+      <div class="summary-card saidas">
+        <div class="label">Total Saídas</div>
+        <div class="value">${totalSaida}</div>
+        <div class="unit">unidades</div>
+      </div>
+      <div class="summary-card devolucao">
+        <div class="label">Devoluções</div>
+        <div class="value">${totalDev}</div>
+        <div class="unit">unidades</div>
+      </div>
+      <div class="summary-card saldo">
+        <div class="label">Saldo Atual</div>
+        <div class="value">${saldoAtual}</div>
+        <div class="unit">unidades</div>
+      </div>
+    </div>
+
+    <div class="formula-box">
+      <div><span class="num">${produzido}</span><span class="lbl">Produzido</span></div>
+      <span class="op">−</span>
+      <div><span class="num">${totalSaida}</span><span class="lbl">Saídas</span></div>
+      <span class="op">+</span>
+      <div><span class="num">${totalDev}</span><span class="lbl">Devoluções</span></div>
+      <span class="op">=</span>
+      <div><span class="num" style="color:${saldoColor};">${saldoAtual}</span><span class="lbl">Saldo</span></div>
+    </div>
+
+    <div class="status-banner">${saldoStatus}</div>
+
+    <!-- SAÍDAS POR ORÇAMENTO -->
+    <div class="section-title"><span class="ico">📋</span> Movimentação de Saídas por Orçamento</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Orçamento / NF</th>
+          <th class="num">Qtd. Enviada</th>
+          <th class="num">Qtd. Devolvida</th>
+          <th class="num">Qtd. Líquida</th>
+        </tr>
+      </thead>
+      <tbody>${saidasRows}</tbody>
+      ${saidas.length ? `<tfoot>
+        <tr>
+          <td>TOTAL</td>
+          <td class="num">${totalSaida}</td>
+          <td class="num">${totalDev}</td>
+          <td class="num">${totalSaida - totalDev}</td>
+        </tr>
+      </tfoot>` : ''}
+    </table>
+
+    <!-- RODAPÉ -->
+    <div class="footer">
+      <div>Documento gerado automaticamente pelo Sistema LNP em ${dataFmt} ${horaFmt}.</div>
+      <div class="sig">
+        <div class="line">Responsável</div>
+        <div class="line">Conferência</div>
+      </div>
+    </div>
+
+    <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+  </body></html>`);
   win.document.close();
 }
 
@@ -1070,6 +1387,126 @@ async function trackDeletarSelecionados() {
   } finally { hideLoading(); }
 }
 
+// MULTIPLICADORES (Caixa → Unidades)
+async function carregarMultiplicadores() {
+  try {
+    const docs = await STORAGE.get('multiplicadores');
+    if (!docs.length) {
+      // Primeira execução: semear com a lista do Conversor.pyw
+      showLoading('Configurando multiplicadores padrão...');
+      await Promise.all(MULTIPLICADORES_SEED.map(([nome, mult]) =>
+        STORAGE.add('multiplicadores', { nome, multiplicador: mult })
+      ));
+      const novos = await STORAGE.get('multiplicadores');
+      multiplicadores = {};
+      novos.forEach(d => { multiplicadores[d.nome] = parseInt(d.multiplicador) || 1; });
+      hideLoading();
+      toast('✅ Multiplicadores padrão configurados!');
+    } else {
+      multiplicadores = {};
+      docs.forEach(d => { multiplicadores[d.nome] = parseInt(d.multiplicador) || 1; });
+    }
+    if (produtosCaixas.length) compRenderCaixas();
+  } catch(e) {
+    console.warn('Erro ao carregar multiplicadores:', e.message);
+  }
+}
+function getMultiplicador(produto) {
+  return multiplicadores[produto] || 1;
+}
+async function abrirModalMultiplicadores() {
+  showLoading('Carregando multiplicadores...');
+  try {
+    _multAll = await STORAGE.get('multiplicadores');
+    document.getElementById('mf-busca').value = '';
+    multRender();
+    document.getElementById('modal-multiplicadores').classList.add('open');
+  } catch(e) {
+    toast('❌ Erro ao carregar: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+function fecharModalMultiplicadores() {
+  document.getElementById('modal-multiplicadores').classList.remove('open');
+}
+function multRender() {
+  const busca = document.getElementById('mf-busca').value.toLowerCase();
+  const filtrados = _multAll.filter(m => !busca || m.nome.toLowerCase().includes(busca))
+    .sort((a,b) => a.nome.localeCompare(b.nome));
+  document.getElementById('mult-count').textContent = `${filtrados.length} de ${_multAll.length} produtos`;
+  const tb = document.getElementById('tbody-mult');
+  if(!filtrados.length) { tb.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#a0aec0;padding:20px;">Nenhum produto encontrado.</td></tr>'; return; }
+  tb.innerHTML = filtrados.map((m,i) => `<tr${i%2?' style="background:#fafbfd;"':''}>
+    <td>${m.nome}</td>
+    <td class="td-center"><strong>${m.multiplicador}</strong> un/cx</td>
+    <td class="td-center">
+      <button onclick="multEditar('${m._id}')" style="background:#dbeafe;color:#1558b0;border:1px solid #bfdbfe;padding:3px 9px;border-radius:6px;cursor:pointer;font-size:0.76rem;margin-right:3px;font-weight:700;">✏️</button>
+      <button onclick="multExcluir('${m._id}')" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;padding:3px 9px;border-radius:6px;cursor:pointer;font-size:0.76rem;font-weight:700;">🗑</button>
+    </td>
+  </tr>`).join('');
+}
+function multAbrirNovo() {
+  _multEditId = null;
+  document.getElementById('mult-form-title').textContent = 'Novo Produto';
+  document.getElementById('mult-nome').value = '';
+  document.getElementById('mult-valor').value = '1';
+  document.getElementById('mult-form').style.display = 'flex';
+  document.getElementById('mult-nome').focus();
+}
+function multEditar(id) {
+  const m = _multAll.find(x => x._id === id);
+  if(!m) return;
+  _multEditId = id;
+  document.getElementById('mult-form-title').textContent = 'Editar Produto';
+  document.getElementById('mult-nome').value = m.nome;
+  document.getElementById('mult-valor').value = m.multiplicador;
+  document.getElementById('mult-form').style.display = 'flex';
+  document.getElementById('mult-nome').focus();
+}
+function multCancelarForm() {
+  document.getElementById('mult-form').style.display = 'none';
+  _multEditId = null;
+}
+async function multSalvar() {
+  const nome = document.getElementById('mult-nome').value.trim().toUpperCase();
+  const valor = parseInt(document.getElementById('mult-valor').value);
+  if(!nome) { toast('Informe o nome do produto.', 'err'); return; }
+  if(!valor || valor < 1) { toast('Informe um multiplicador válido (≥ 1).', 'err'); return; }
+  showLoading('Salvando...');
+  try {
+    if(_multEditId) {
+      await db.collection('multiplicadores').doc(_multEditId).update({ nome, multiplicador: valor });
+      const item = _multAll.find(x => x._id === _multEditId);
+      item.nome = nome; item.multiplicador = valor;
+    } else {
+      const dup = _multAll.find(x => x.nome === nome);
+      if(dup) { toast('Este produto já está cadastrado. Edite-o em vez de duplicar.', 'err'); hideLoading(); return; }
+      const id = await STORAGE.add('multiplicadores', { nome, multiplicador: valor });
+      _multAll.push({ _id: id, nome, multiplicador: valor });
+    }
+    multiplicadores[nome] = valor;
+    multRender();
+    multCancelarForm();
+    toast('✅ Multiplicador salvo!');
+  } catch(e) {
+    toast('❌ Erro ao salvar: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+async function multExcluir(id) {
+  const m = _multAll.find(x => x._id === id);
+  if(!m) return;
+  if(!confirm(`Excluir o multiplicador de "${m.nome}"?`)) return;
+  showLoading('Excluindo...');
+  try {
+    await db.collection('multiplicadores').doc(id).delete();
+    _multAll = _multAll.filter(x => x._id !== id);
+    delete multiplicadores[m.nome];
+    multRender();
+    toast('✅ Excluído!');
+  } catch(e) {
+    toast('❌ Erro ao excluir: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+
 // COMPARADOR
 function compTab(btn, tabId) {
   document.querySelectorAll('.comp-tab').forEach(t => t.classList.remove('active'));
@@ -1111,18 +1548,34 @@ function compProcessarCaixas() {
     }
   });
   compRenderCaixas();
-  toast(`✅ ${produtosCaixas.length} produtos processados.`);
+  const semCadastro = [...new Set(produtosCaixas.filter(p => !(p.Produto in multiplicadores)).map(p => p.Produto))];
+  if (semCadastro.length) {
+    toast(`⚠️ ${produtosCaixas.length} produtos processados, mas ${semCadastro.length} sem multiplicador cadastrado (usando 1x).`, 'err');
+  } else {
+    toast(`✅ ${produtosCaixas.length} produtos processados e convertidos.`);
+  }
 }
 function compRenderCaixas() {
   const tb = document.getElementById('tbody-caixas');
-  if(!produtosCaixas.length) { tb.innerHTML = '<tr><td colspan="4">Nenhum produto.</td></tr>'; return; }
-  tb.innerHTML = produtosCaixas.map((p,idx) => `<tr><td>${p.Produto}</td><td class="td-center">${p.Quantidade}</td><td class="td-center">${p.Lote}</td>
-    <td class="td-center"><button onclick="compAbrirModalEditar(${idx})">✏️</button> <button onclick="compDeletarCaixa(${idx})">🗑</button></td></tr>`).join('');
+  if(!produtosCaixas.length) { tb.innerHTML = '<tr><td colspan="6">Nenhum produto.</td></tr>'; return; }
+  tb.innerHTML = produtosCaixas.map((p,idx) => {
+    const mult = getMultiplicador(p.Produto);
+    const unidades = p.Quantidade * mult;
+    const semCadastro = !(p.Produto in multiplicadores);
+    return `<tr${semCadastro ? ' class="tr-div"' : ''}>
+      <td>${p.Produto}${semCadastro ? ' <span style="color:#c0392b;font-size:0.74rem;font-weight:700;" title="Multiplicador não cadastrado, usando 1x">⚠️ sem mult.</span>' : ''}</td>
+      <td class="td-center">${p.Quantidade}</td>
+      <td class="td-center">${mult}x</td>
+      <td class="td-center"><strong>${unidades}</strong></td>
+      <td class="td-center">${p.Lote}</td>
+      <td class="td-center"><button onclick="compAbrirModalEditar(${idx})">✏️</button> <button onclick="compDeletarCaixa(${idx})">🗑</button></td>
+    </tr>`;
+  }).join('');
 }
 function compComparar() {
   if(!produtosOrcamento.length || !produtosCaixas.length) { toast('Insira dados de orçamento e caixas.', 'err'); return; }
   const mapOrc = {}; produtosOrcamento.forEach(p => mapOrc[p.Produto] = p.Quantidade);
-  const mapCx = {}; produtosCaixas.forEach(p => mapCx[p.Produto] = (mapCx[p.Produto]||0) + p.Quantidade);
+  const mapCx = {}; produtosCaixas.forEach(p => mapCx[p.Produto] = (mapCx[p.Produto]||0) + (p.Quantidade * getMultiplicador(p.Produto)));
   const todos = [...new Set([...Object.keys(mapOrc),...Object.keys(mapCx)])].sort();
   let hasDivergencia = false;
   const tb = document.getElementById('tbody-comparacao');
@@ -1138,15 +1591,19 @@ async function compFinalizarSalvar() {
   if(!compOrcamento) { toast('Nenhum número de orçamento.', 'err'); return; }
   showLoading('Salvando saídas no Firebase...');
   try {
-    await Promise.all(produtosCaixas.map(p => STORAGE.add('produtos_saida', { nome: p.Produto, lote: p.Lote, documento: compOrcamento, quantidade: String(p.Quantidade), criado_em: new Date().toISOString() })));
-    let csv = 'Produto,Lote,Orçamento,Quantidade\n';
-    produtosCaixas.forEach(p => csv += `"${p.Produto}","${p.Lote}","${compOrcamento}","${p.Quantidade}"\n`);
+    await Promise.all(produtosCaixas.map(p => {
+      const mult = getMultiplicador(p.Produto);
+      const unidades = p.Quantidade * mult;
+      return STORAGE.add('produtos_saida', { nome: p.Produto, lote: p.Lote, documento: compOrcamento, quantidade: String(unidades), caixas: p.Quantidade, multiplicador: mult, criado_em: new Date().toISOString() });
+    }));
+    let csv = 'Produto,Lote,Orçamento,Caixas,Multiplicador,Quantidade(Unidades)\n';
+    produtosCaixas.forEach(p => { const mult = getMultiplicador(p.Produto); csv += `"${p.Produto}","${p.Lote}","${compOrcamento}","${p.Quantidade}","${mult}","${p.Quantidade * mult}"\n`; });
     const blob = new Blob([csv], { type: 'text/csv' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `Orcamento_${compOrcamento}_${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
-    toast(`✅ Orçamento ${compOrcamento} salvo no Firebase e exportado!`);
+    toast(`✅ Orçamento ${compOrcamento} salvo no Firebase (convertido em unidades) e exportado!`);
     compLimparTudo(true);
   } catch(e) {
     toast('❌ Erro ao salvar: ' + e.message, 'err');
