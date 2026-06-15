@@ -32,6 +32,20 @@ body {
   letter-spacing: 4px;
   color: #1a2a4a;
   margin-bottom: 6px;
+  display: flex; align-items: center; gap: 10px; justify-content: center;
+}
+.version-badge {
+  font-size: 0.7rem; font-weight: 800;
+  background: #1a2a4a; color: #fff;
+  padding: 3px 9px; border-radius: 20px;
+  letter-spacing: 1px; vertical-align: middle;
+  text-transform: uppercase;
+}
+.version-badge.mod {
+  background: #eef1f7; color: #6b7a99;
+  font-size: 0.7rem; font-weight: 800;
+  padding: 3px 9px; border-radius: 20px;
+  letter-spacing: 1px; flex-shrink: 0;
 }
 .home-subtitle {
   font-size: 0.88rem;
@@ -70,6 +84,8 @@ body {
 .module-card.track::before { background: linear-gradient(90deg,#1a7f3c,#23a84f); }
 .module-card.comp::before  { background: linear-gradient(90deg,#1558b0,#2272e8); }
 .module-card.dev::before   { background: linear-gradient(90deg,#6930b8,#9050e0); }
+.module-card.unid::before  { background: linear-gradient(90deg,#b7791f,#d69e2e); }
+.module-card.estoque::before { background: linear-gradient(90deg,#b91c1c,#ef4444); }
 .module-card:hover {
   transform: translateY(-7px);
   box-shadow: 0 14px 36px rgba(0,0,0,.12);
@@ -77,6 +93,8 @@ body {
 .module-card.track:hover { border-color: #23a84f; }
 .module-card.comp:hover  { border-color: #2272e8; }
 .module-card.dev:hover   { border-color: #9050e0; }
+.module-card.unid:hover  { border-color: #d69e2e; }
+.module-card.estoque:hover { border-color: #ef4444; }
 .module-icon  { font-size: 3rem; margin-bottom: 16px; }
 .module-title { font-size: 1.2rem; font-weight: 800; color: #1a2a4a; margin-bottom: 9px; }
 .module-desc  { font-size: 0.82rem; color: #6b7a99; line-height: 1.55; }
@@ -111,6 +129,7 @@ body {
 .field-group label { font-size: 0.76rem; color: #6b7a99; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
 .field-group input,
 .field-group select,
+.field-group textarea,
 input.inp, select.inp {
   background: #f8fafc;
   border: 1px solid #c8d0de;
@@ -121,9 +140,11 @@ input.inp, select.inp {
   outline: none;
   transition: border-color .15s, box-shadow .15s;
   width: 100%;
+  font-family: inherit;
 }
 .field-group input:focus,
 .field-group select:focus,
+.field-group textarea:focus,
 input.inp:focus { border-color: #2272e8; box-shadow: 0 0 0 3px rgba(34,114,232,.12); }
 
 .btn {
@@ -191,6 +212,41 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
 .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.76rem; font-weight: 800; }
 .badge-ok  { background: #d4edda; color: #155724; }
 .badge-div { background: #f8d7da; color: #721c24; }
+.badge-warn { background: #fff3cd; color: #7c4a00; }
+.badge-expired { background: #f8d7da; color: #721c24; }
+.badge-zero { background: #eef1f7; color: #6b7a99; }
+
+/* ESTOQUE & VALIDADE */
+.stock-summary-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.stock-summary-card {
+  background: #fff; border: 1px solid #d0d8e8; border-radius: 12px;
+  padding: 14px 16px; border-top: 4px solid #c8d0de;
+}
+.stock-summary-card.total     { border-top-color: #1558b0; }
+.stock-summary-card.unidades  { border-top-color: #1a7f3c; }
+.stock-summary-card.proximo   { border-top-color: #b7791f; }
+.stock-summary-card.vencido   { border-top-color: #c0392b; }
+.stock-summary-card .label {
+  font-size: 0.74rem; font-weight: 800; color: #6b7a99;
+  text-transform: uppercase; letter-spacing: .8px; margin-bottom: 4px;
+}
+.stock-summary-card .value { font-size: 1.6rem; font-weight: 900; color: #1a2a4a; }
+.stock-summary-card.proximo .value { color: #b7791f; }
+.stock-summary-card.vencido .value { color: #c0392b; }
+@media (max-width: 900px) { .stock-summary-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.stock-filters {
+  display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end;
+}
+.stock-filters .field-group { flex: 1; min-width: 160px; }
+.stock-filters select { cursor: pointer; }
+.tr-warn { background: #fffbeb !important; }
+.tr-warn:hover { background: #fef3c7 !important; }
+.tr-expired { background: #fef2f2 !important; }
+.tr-expired:hover { background: #fee2e2 !important; }
 
 #mod-track .mod-body {
   display: flex; gap: 18px; padding: 18px; flex: 1; overflow: hidden;
@@ -311,20 +367,20 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
 .scan-row .field-group { flex: 1; }
 
 .motivo-wrapper { position: relative; }
-#motivo-btn {
+#motivo-input {
   background: #f8fafc; border: 1px solid #c8d0de;
-  color: #1a1d23; padding: 8px 32px 8px 10px;
-  border-radius: 7px; cursor: pointer;
+  color: #1a1d23; padding: 8px 10px;
+  border-radius: 7px;
   font-size: 0.88rem; text-align: left;
   width: 100%; position: relative;
+  outline: none;
   transition: border-color .15s, box-shadow .15s;
 }
-#motivo-btn::after { content: '▾'; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #6b7a99; }
-#motivo-btn:focus, #motivo-btn.open { border-color: #6930b8; box-shadow: 0 0 0 3px rgba(105,48,184,.1); }
+#motivo-input:focus { border-color: #6930b8; box-shadow: 0 0 0 3px rgba(105,48,184,.1); }
 #motivo-list {
   display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
   background: #fff; border: 1px solid #c8d0de; border-radius: 8px;
-  max-height: 220px; overflow-y: auto; z-index: 500;
+  max-height: 240px; overflow-y: auto; z-index: 500;
   box-shadow: 0 8px 24px rgba(0,0,0,.12);
 }
 #motivo-list.open { display: block; }
@@ -334,6 +390,10 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
 }
 #motivo-list div:hover { background: #f0f5ff; }
 #motivo-list div.selected { color: #6930b8; font-weight: 700; }
+#motivo-list div.add-new { color: #1a7f3c; font-weight: 700; background: #f0fdf4; }
+#motivo-list div.add-new:hover { background: #dcfce7; }
+#motivo-list .empty-msg { padding: 10px 12px; font-size: 0.8rem; color: #a0aec0; font-style: italic; }
+
 
 .dev-count { text-align: right; font-size: 0.82rem; color: #6930b8; font-weight: 800; padding: 6px 14px; }
 
@@ -446,7 +506,7 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
 
 <!-- HOME -->
 <div id="home-screen">
-  <div class="home-logo">LNP</div>
+  <div class="home-logo">LNP <span class="version-badge">v1.0</span></div>
   <div class="home-subtitle">Sistema de Controle de Estoque</div>
   <div class="module-cards">
     <div class="module-card track" onclick="openModule('mod-track')">
@@ -459,10 +519,20 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
       <div class="module-title">Comparador</div>
       <div class="module-desc">Conferência de orçamento vs. caixas físicas com detecção de divergências.</div>
     </div>
+    <div class="module-card unid" onclick="openModule('mod-unid')">
+      <div class="module-icon">🔢</div>
+      <div class="module-title">Unidades</div>
+      <div class="module-desc">Registro de saídas já escaneadas em unidades, sem conversão por caixa.</div>
+    </div>
     <div class="module-card dev" onclick="openModule('mod-dev')">
       <div class="module-icon">↩️</div>
       <div class="module-title">Devolução</div>
       <div class="module-desc">Registro de retorno de produtos com motivo, responsável e geração de PDF.</div>
+    </div>
+    <div class="module-card estoque" onclick="openModule('mod-estoque')">
+      <div class="module-icon">📊</div>
+      <div class="module-title">Estoque & Validade</div>
+      <div class="module-desc">Visão geral do estoque atual com alertas de produtos próximos do vencimento.</div>
     </div>
   </div>
 </div>
@@ -472,6 +542,7 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   <div class="mod-header">
     <button class="back-btn" onclick="closeModule()">← Voltar</button>
     <span class="mod-header-title">📦 Rastreabilidade</span>
+    <span class="version-badge mod">v1.0</span>
     <span class="firebase-status connecting" id="fb-status-track"><span class="dot"></span><span class="label">Conectando...</span></span>
     <span class="mod-header-clock" id="clock-track"></span>
   </div>
@@ -521,6 +592,7 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   <div class="mod-header">
     <button class="back-btn" onclick="closeModule()">← Voltar</button>
     <span class="mod-header-title">🔍 Comparador de Orçamento</span>
+    <span class="version-badge mod">v1.0</span>
     <span class="firebase-status connecting" id="fb-status-comp"><span class="dot"></span><span class="label">Conectando...</span></span>
     <span class="mod-header-clock" id="clock-comp"></span>
   </div>
@@ -532,6 +604,7 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
         <button class="comp-tab" onclick="compTab(this,'tab-comparacao')">📊 Comparação</button>
       </div>
       <button class="btn btn-gray" style="width:auto;padding:7px 16px;" onclick="abrirModalMultiplicadores()">⚙️ Multiplicadores (Cx → Un)</button>
+      <button class="btn btn-red" style="width:auto;padding:7px 16px;" onclick="abrirModalSaidas()">🗃️ Gerenciar Saídas</button>
       <div id="comp-status-banner"></div>
     </div>
     <div id="tab-qr" class="comp-tab-content active">
@@ -569,7 +642,7 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
     <div id="tab-comparacao" class="comp-tab-content">
       <div class="table-wrapper" style="flex:1;min-height:180px;">
         <table>
-          <thead><tr><th>Produto</th><th class="td-center">Qtd Orçamento (Un)</th><th class="td-center">Qtd Caixas (Un)</th><th class="td-center">Status</th></tr></thead>
+          <thead><tr><th>Produto</th><th class="td-center">Qtd Orçamento</th><th class="td-center">Qtd Escaneada (Cx)</th><th class="td-center">Status</th></tr></thead>
           <tbody id="tbody-comparacao"><tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:24px;">Clique em "Comparar Dados" para gerar a comparação.</td></tr></tbody>
         </table>
       </div>
@@ -607,11 +680,74 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   </div>
 </div>
 
+<!-- MÓDULO – UNIDADES -->
+<div id="mod-unid" class="module-screen">
+  <div class="mod-header">
+    <button class="back-btn" onclick="closeModule()">← Voltar</button>
+    <span class="mod-header-title">🔢 Saída em Unidades</span>
+    <span class="version-badge mod">v1.0</span>
+    <span class="firebase-status connecting" id="fb-status-unid"><span class="dot"></span><span class="label">Conectando...</span></span>
+    <span class="mod-header-clock" id="clock-unid"></span>
+  </div>
+  <div class="mod-body">
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+      <button class="btn btn-red" style="width:auto;padding:7px 16px;" onclick="abrirModalSaidas()">🗃️ Gerenciar Saídas</button>
+    </div>
+    <div class="comp-input-area">
+      <label>Número do Orçamento / NF:</label>
+      <input id="unid-orcamento" type="text" class="comp-textarea" style="min-height:auto;height:auto;" placeholder="Digite o número do orçamento...">
+      <label style="margin-top:6px;">Cole os dados já em unidades (uma linha por item — PRODUTO  LOTE):</label>
+      <textarea id="unid-input" class="comp-textarea" rows="4" placeholder="PRODUTO A   LOTE-2025/001&#10;PRODUTO A   LOTE-2025/001&#10;PRODUTO B   LOTE-2025/002"></textarea>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-green" style="width:auto;padding:8px 22px;" onclick="unidProcessarItens()">▶ Processar Dados</button>
+        <button class="btn btn-blue" style="width:auto;padding:8px 22px;" onclick="unidAbrirModalAdicionar()">＋ Adicionar Item</button>
+      </div>
+    </div>
+    <div class="table-wrapper" style="flex:1;min-height:220px;">
+      <table>
+        <thead><tr><th>Produto</th><th class="td-center">Quantidade (Un)</th><th class="td-center">Lote</th><th class="td-center">Ações</th></tr></thead>
+        <tbody id="tbody-unidades"><tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:24px;">Nenhum dado processado ainda.</td></tr></tbody>
+      </table>
+    </div>
+    <div class="comp-actions" style="background:#fff;border:1px solid #d0d8e8;border-radius:10px;padding:12px;">
+      <button class="btn btn-blue" onclick="unidFinalizarSalvar()">💾 Finalizar e Salvar</button>
+      <button class="btn btn-red" onclick="unidLimparTudo()" style="margin-left:auto;">🗑 Limpar Todos os Dados</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADICIONAR/EDITAR ITEM (UNIDADES) -->
+<div id="modal-unidade" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-unidade-title">Adicionar Item</div>
+    <div class="comp-input-area" style="gap:8px;">
+      <label>Colar múltiplos (um item por linha — PRODUTO  LOTE):</label>
+      <textarea id="modal-unidade-multi-input" class="comp-textarea" rows="4"></textarea>
+      <button class="btn btn-green" style="width:auto;padding:8px 18px;" onclick="unidProcessarModalMulti()">▶ Processar Colagem</button>
+    </div>
+    <hr style="border:none;border-top:1px solid #e8edf5;">
+    <div style="font-size:0.76rem;color:#6b7a99;font-weight:700;text-transform:uppercase;">Ou adicione manualmente:</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div class="field-group"><label>Produto</label><input id="modal-unidade-produto" type="text"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="field-group"><label>Quantidade</label><input id="modal-unidade-quantidade" type="number" value="1"></div>
+        <div class="field-group"><label>Lote</label><input id="modal-unidade-lote" type="text"></div>
+      </div>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn btn-gray" onclick="fecharModalUnidade()">Cancelar</button>
+      <button class="btn btn-blue" onclick="unidSalvarModal()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <!-- MÓDULO 3 – DEVOLUÇÃO -->
 <div id="mod-dev" class="module-screen">
+
   <div class="mod-header">
     <button class="back-btn" onclick="closeModule()">← Voltar</button>
     <span class="mod-header-title">↩️ Sistema de Devolução</span>
+    <span class="version-badge mod">v1.0</span>
     <span class="firebase-status connecting" id="fb-status-dev"><span class="dot"></span><span class="label">Conectando...</span></span>
     <span class="mod-header-clock" id="clock-dev"></span>
   </div>
@@ -650,7 +786,11 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
         <div class="field-group">
           <label>Motivo de Retorno</label>
           <div class="motivo-wrapper">
-            <button id="motivo-btn" onclick="toggleMotivo()">Selecione um motivo</button>
+            <input id="motivo-input" type="text" placeholder="Digite ou selecione um motivo..."
+              autocomplete="off"
+              onfocus="motivoAbrirLista()"
+              oninput="motivoFiltrar()"
+              onkeydown="if(event.key==='Enter'){event.preventDefault(); motivoConfirmarDigitado();}">
             <div id="motivo-list"></div>
           </div>
         </div>
@@ -673,8 +813,81 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   </div>
   <div class="dev-action-bar">
     <button class="btn btn-gray" onclick="devLimpar()">🧹 Limpar Tudo</button>
+    <button class="btn btn-teal" onclick="abrirModalDevolucoes()">🗃️ Gerenciar Devoluções</button>
     <button class="btn btn-red" style="margin-left:auto;" onclick="devDeletarItem()">🗑 Deletar Selecionado</button>
     <button class="btn btn-purple" onclick="devFinalizar()">✅ Finalizar e Gerar PDF</button>
+  </div>
+</div>
+
+<!-- MÓDULO – ESTOQUE & VALIDADE -->
+<div id="mod-estoque" class="module-screen">
+  <div class="mod-header">
+    <button class="back-btn" onclick="closeModule()">← Voltar</button>
+    <span class="mod-header-title">📊 Estoque & Validade</span>
+    <span class="version-badge mod">v1.0</span>
+    <span class="firebase-status connecting" id="fb-status-estoque"><span class="dot"></span><span class="label">Conectando...</span></span>
+    <span class="mod-header-clock" id="clock-estoque"></span>
+  </div>
+  <div class="mod-body" style="overflow-y:auto;">
+
+    <div class="stock-summary-grid">
+      <div class="stock-summary-card total">
+        <div class="label">Lotes em Estoque</div>
+        <div class="value" id="stock-total-lotes">—</div>
+      </div>
+      <div class="stock-summary-card unidades">
+        <div class="label">Total de Unidades</div>
+        <div class="value" id="stock-total-unidades">—</div>
+      </div>
+      <div class="stock-summary-card proximo">
+        <div class="label">Próximos do Vencimento</div>
+        <div class="value" id="stock-total-proximos">—</div>
+      </div>
+      <div class="stock-summary-card vencido">
+        <div class="label">Vencidos</div>
+        <div class="value" id="stock-total-vencidos">—</div>
+      </div>
+    </div>
+
+    <div class="card" style="display:flex;flex-direction:column;gap:12px;">
+      <div class="stock-filters">
+        <div class="field-group">
+          <label>Buscar Produto</label>
+          <input id="stock-busca" type="text" placeholder="Nome do produto..." oninput="stockRender()">
+        </div>
+        <div class="field-group">
+          <label>Status</label>
+          <select id="stock-filtro-status" onchange="stockRender()">
+            <option value="todos">Todos</option>
+            <option value="vencido">Vencidos</option>
+            <option value="proximo">Próximos do Vencimento</option>
+            <option value="ok">Dentro da Validade</option>
+          </select>
+        </div>
+        <div class="field-group" style="max-width:200px;">
+          <label>Alertar com (dias)</label>
+          <input id="stock-dias-alerta" type="number" min="1" value="30" onchange="stockRender()">
+        </div>
+        <button class="btn btn-blue" style="width:auto;padding:8px 20px;flex-shrink:0;" onclick="stockCarregar()">🔄 Atualizar</button>
+        <button class="btn btn-teal" style="width:auto;padding:8px 20px;flex-shrink:0;" onclick="stockGerarPDF()">🖨️ Imprimir PDF</button>
+      </div>
+    </div>
+
+    <div class="table-wrapper" style="flex:1;min-height:240px;">
+      <table>
+        <thead><tr>
+          <th>Produto</th>
+          <th class="td-center">Código</th>
+          <th class="td-center">Lote</th>
+          <th class="td-center">Saldo Atual</th>
+          <th class="td-center">Vencimento</th>
+          <th class="td-center">Dias p/ Vencer</th>
+          <th class="td-center">Status</th>
+        </tr></thead>
+        <tbody id="tbody-estoque"><tr><td colspan="7" style="text-align:center;color:#a0aec0;padding:24px;">Clique em "Atualizar" para carregar os dados.</td></tr></tbody>
+      </table>
+    </div>
+
   </div>
 </div>
 
@@ -693,12 +906,74 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
     </div>
     <div class="table-wrapper" style="max-height:420px;overflow-y:auto;">
       <table>
-        <thead><tr><th style="width:36px;"><input type="checkbox" id="cb-all" onchange="entriesToggleAll(this.checked)"></th><th>Nome</th><th>Lote</th><th>Documento</th><th class="td-center">Qtd</th><th class="td-center">Lançamento</th><th class="td-center">Vencimento</th></tr></thead>
+        <thead><tr><th style="width:36px;"><input type="checkbox" id="cb-all" onchange="entriesToggleAll(this.checked)"></th><th>Nome</th><th>Lote</th><th>Documento</th><th class="td-center">Qtd</th><th class="td-center">Lançamento</th><th class="td-center">Vencimento</th><th class="td-center" style="width:70px;">Ações</th></tr></thead>
         <tbody id="tbody-entries"></tbody>
       </table>
     </div>
     <div class="modal-buttons">
       <button class="btn btn-gray" onclick="document.getElementById('modal-entradas').classList.remove('open')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GERENCIAR SAÍDAS -->
+<div id="modal-saidas" class="modal-overlay">
+  <div class="modal-box" style="width:860px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="modal-title">🗃️ Gerenciar Saídas Registradas</div>
+      <div id="saidas-count" style="margin-left:auto;"></div>
+    </div>
+    <div class="entries-filters">
+      <input id="sf-nome" type="text" placeholder="Filtrar por nome..." oninput="saidasRender()">
+      <input id="sf-lote" type="text" placeholder="Filtrar por lote..." oninput="saidasRender()">
+      <input id="sf-doc"  type="text" placeholder="Filtrar por orçamento..." oninput="saidasRender()">
+      <button class="btn btn-red" style="width:auto;padding:7px 18px;flex-shrink:0;" onclick="saidasDeletarSelecionados()">🗑 Excluir Selecionados</button>
+    </div>
+    <div class="table-wrapper" style="max-height:420px;overflow-y:auto;">
+      <table>
+        <thead><tr><th style="width:36px;"><input type="checkbox" id="cb-all-saidas" onchange="toggleAllCb(this.checked,'cb-saida')"></th><th>Nome</th><th>Lote</th><th>Orçamento/NF</th><th class="td-center">Caixas</th><th class="td-center">Mult.</th><th class="td-center">Qtd (Un)</th><th class="td-center" style="width:70px;">Ações</th></tr></thead>
+        <tbody id="tbody-saidas"></tbody>
+      </table>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn btn-gray" onclick="document.getElementById('modal-saidas').classList.remove('open')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GERENCIAR DEVOLUÇÕES -->
+<div id="modal-devolucoes" class="modal-overlay">
+  <div class="modal-box" style="width:920px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="modal-title">🗃️ Gerenciar Devoluções Registradas</div>
+      <div id="devolucoes-count" style="margin-left:auto;"></div>
+    </div>
+    <div class="entries-filters">
+      <input id="df-nome" type="text" placeholder="Filtrar por nome..." oninput="devolucoesRender()">
+      <input id="df-lote" type="text" placeholder="Filtrar por lote..." oninput="devolucoesRender()">
+      <input id="df-doc"  type="text" placeholder="Filtrar por orçamento/NF..." oninput="devolucoesRender()">
+      <button class="btn btn-red" style="width:auto;padding:7px 18px;flex-shrink:0;" onclick="devolucoesDeletarSelecionados()">🗑 Excluir Selecionados</button>
+    </div>
+    <div class="table-wrapper" style="max-height:420px;overflow-y:auto;">
+      <table>
+        <thead><tr><th style="width:36px;"><input type="checkbox" id="cb-all-dev" onchange="toggleAllCb(this.checked,'cb-dev')"></th><th>Nome</th><th>Lote</th><th>Orç/NF</th><th class="td-center">Qtd</th><th>Cliente</th><th>Motivo</th><th class="td-center" style="width:90px;">Ações</th></tr></thead>
+        <tbody id="tbody-devolucoes"></tbody>
+      </table>
+    </div>
+    <div class="modal-buttons">
+      <button class="btn btn-gray" onclick="document.getElementById('modal-devolucoes').classList.remove('open')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDIÇÃO GENÉRICA DE REGISTRO -->
+<div id="modal-edit-registro" class="modal-overlay">
+  <div class="modal-box" style="width:560px;">
+    <div class="modal-title" id="edit-registro-title">Editar Registro</div>
+    <div id="edit-registro-fields" style="display:flex;flex-direction:column;gap:10px;"></div>
+    <div class="modal-buttons">
+      <button class="btn btn-gray" onclick="fecharModalEditRegistro()">Cancelar</button>
+      <button class="btn btn-blue" onclick="salvarEditRegistro()">Salvar Alterações</button>
     </div>
   </div>
 </div>
@@ -792,7 +1067,8 @@ const MULTIPLICADORES_SEED = [
   ["TOSTATA TOMATE SECO 180G OBA", 10], ["TOSTATA TRADICIONAL 180G OBA", 10]
 ];
 
-const motivos = ["Alteracao de qualidade","Atraso no agendamento","Avaria no transporte","Baixa rotatividade","Cancelamento antes da entrega","Carga incompleta","Carga molhada","Cliente nao aceita substituicao","Cliente sem condicoes de recebimento","Defeito de fabricacao","Devolucao para troca","Devolucao por desacordo comercial","Divergencia comercial","Divergencia entre pedido e nota fiscal","Embalagem violada","Endereco incorreto","Entrega fora do prazo","Entrega sem autorizacao","Envio para cliente incorreto","Erro operacional interno","Estabelecimento fechado","Excesso de estoque","Falha de fechamento do pacote","Falta de espaco para armazenamento","Faturamento incorreto","Inversao de produtos","Motivo em analise","Pedido duplicado","Produto nao solicitado","Produto vencido","Quantidade divergente","Recusa no recebimento","Volume extraviado"];
+const MOTIVOS_SEED = ["Alteracao de qualidade","Atraso no agendamento","Avaria no transporte","Baixa rotatividade","Cancelamento antes da entrega","Carga incompleta","Carga molhada","Cliente nao aceita substituicao","Cliente sem condicoes de recebimento","Defeito de fabricacao","Devolucao para troca","Devolucao por desacordo comercial","Divergencia comercial","Divergencia entre pedido e nota fiscal","Embalagem violada","Endereco incorreto","Entrega fora do prazo","Entrega sem autorizacao","Envio para cliente incorreto","Erro operacional interno","Estabelecimento fechado","Excesso de estoque","Falha de fechamento do pacote","Falta de espaco para armazenamento","Faturamento incorreto","Inversao de produtos","Motivo em analise","Pedido duplicado","Produto nao solicitado","Produto vencido","Quantidade divergente","Recusa no recebimento","Volume extraviado"];
+let motivos = [];
 
 // Navegação
 function openModule(id) {
@@ -808,7 +1084,7 @@ function closeModule() {
 // Relógio
 function updateClocks() {
   const now = new Date().toLocaleString('pt-BR');
-  ['clock-track','clock-comp','clock-dev'].forEach(id => {
+  ['clock-track','clock-comp','clock-unid','clock-dev','clock-estoque'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = now;
   });
@@ -848,6 +1124,7 @@ function initFirebase() {
     db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
     startFbStatusWatcher();
     carregarMultiplicadores();
+    carregarMotivos();
   } catch(e) {
     console.warn('Firebase não inicializado:', e.message);
     setFbStatus('offline');
@@ -856,7 +1133,7 @@ function initFirebase() {
 function onFirebaseReady() { initFirebase(); }
 
 function setFbStatus(status) {
-  const ids = ['fb-status-track', 'fb-status-comp', 'fb-status-dev'];
+  const ids = ['fb-status-track', 'fb-status-comp', 'fb-status-unid', 'fb-status-dev', 'fb-status-estoque'];
   const labels = { connecting: 'Conectando...', online: 'Firebase Online', offline: 'Firebase Offline' };
   ids.forEach(id => {
     const el = document.getElementById(id);
@@ -897,6 +1174,10 @@ const STORAGE = {
     const batch = db.batch();
     ids.forEach(id => batch.delete(db.collection(colecao).doc(id)));
     await batch.commit();
+  },
+  async update(colecao, id, dados) {
+    if (!db) throw new Error('Firebase não disponível. Verifique sua conexão.');
+    await db.collection(colecao).doc(id).update(dados);
   }
 };
 
@@ -1125,6 +1406,7 @@ function trackGerarPDF() {
       display: flex; justify-content: space-between; align-items: flex-start;
       border-bottom: 3px solid #1a7f3c;
       padding-bottom: 10px; margin-bottom: 16px;
+      page-break-after: avoid;
     }
     .header .brand { display:flex; flex-direction:column; }
     .header .brand .logo {
@@ -1144,6 +1426,7 @@ function trackGerarPDF() {
       color: #1a7f3c; border-bottom: 1.5px solid #d0d8e8;
       padding-bottom: 4px; margin: 18px 0 8px;
       display: flex; align-items: center; gap: 6px;
+      page-break-after: avoid;
     }
     .section-title:first-of-type { margin-top: 0; }
     .section-title .ico { font-size: 13px; }
@@ -1154,6 +1437,7 @@ function trackGerarPDF() {
       gap: 10px;
       background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
       padding: 12px 14px;
+      page-break-inside: avoid;
     }
     .id-grid .item { display:flex; flex-direction:column; gap:2px; }
     .id-grid .item.full { grid-column: 1 / -1; }
@@ -1167,6 +1451,7 @@ function trackGerarPDF() {
     .summary-grid {
       display: grid; grid-template-columns: repeat(4, 1fr);
       gap: 10px; margin-bottom: 4px;
+      page-break-inside: avoid;
     }
     .summary-card {
       border: 1px solid #e2e8f0; border-radius: 6px;
@@ -1196,7 +1481,10 @@ function trackGerarPDF() {
     }
 
     /* TABELA */
-    table { width: 100%; border-collapse: collapse; }
+    table { width: 100%; border-collapse: collapse; page-break-inside: auto; }
+    thead { display: table-header-group; }
+    tfoot { display: table-footer-group; }
+    tr { page-break-inside: avoid; page-break-after: auto; }
     thead th {
       background: #1a2a4a; color: #fff;
       font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px;
@@ -1363,12 +1651,14 @@ function entriesRender() {
   const filtrados = _allEntries.filter(e => (!fNome || (e.nome||'').toLowerCase().includes(fNome)) && (!fLote || (e.lote||'').toLowerCase().includes(fLote)) && (!fDoc || (e.documento||'').toLowerCase().includes(fDoc)));
   document.getElementById('entries-count').textContent = `${filtrados.length} de ${_allEntries.length} registros`;
   const tb = document.getElementById('tbody-entries');
-  if(!filtrados.length) { tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#a0aec0;padding:20px;">Nenhum registro.</td></tr>'; return; }
+  if(!filtrados.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#a0aec0;padding:20px;">Nenhum registro.</td></tr>'; return; }
   tb.innerHTML = filtrados.map((e,i) => `<tr${i%2?' style="background:#fafbfd;"':''}>
     <td class="td-center"><input type="checkbox" class="cb-entry" data-id="${e._id}" style="cursor:pointer;width:15px;height:15px;"></td>
     <td>${e.nome||'—'}</td><td>${e.lote||'—'}</td><td>${formatarCodigo(e.documento)}</td>
     <td class="td-center">${e.quantidade||'—'}</td><td class="td-center">${formatarData(e.data_lancamento)||'—'}</td>
-    <td class="td-center">${formatarData(e.data_vencimento)||'—'}</td></tr>`).join('');
+    <td class="td-center">${formatarData(e.data_vencimento)||'—'}</td>
+    <td class="td-center"><button onclick="entryEditar('${e._id}')" style="background:#dbeafe;color:#1558b0;border:1px solid #bfdbfe;padding:3px 9px;border-radius:6px;cursor:pointer;font-size:0.76rem;font-weight:700;">✏️</button></td>
+    </tr>`).join('');
 }
 function entriesToggleAll(checked) { document.querySelectorAll('.cb-entry').forEach(cb => cb.checked = checked); }
 async function trackDeletarSelecionados() {
@@ -1385,6 +1675,270 @@ async function trackDeletarSelecionados() {
   } catch(e) {
     toast('❌ Erro ao excluir: ' + e.message, 'err');
   } finally { hideLoading(); }
+}
+function entryEditar(id) {
+  const item = _allEntries.find(x => x._id === id);
+  if(!item) return;
+  abrirModalEditRegistro({
+    titulo: 'Editar Entrada',
+    colecao: 'produtos_entrada',
+    id: item._id,
+    campos: [
+      { key: 'codigo', label: 'Código', type: 'text', value: item.codigo },
+      { key: 'nome', label: 'Nome do Produto', type: 'text', value: item.nome },
+      { key: 'documento', label: 'Documento', type: 'text', value: item.documento },
+      { key: 'quantidade', label: 'Quantidade', type: 'number', value: item.quantidade },
+      { key: 'data_lancamento', label: 'Data de Lançamento', type: 'date', value: item.data_lancamento },
+      { key: 'data_vencimento', label: 'Data de Vencimento', type: 'date', value: item.data_vencimento },
+      { key: 'lote', label: 'Lote', type: 'text', value: item.lote },
+    ],
+    onSave: (novosValores) => {
+      Object.assign(item, novosValores);
+      entriesRender();
+    }
+  });
+}
+
+// ════════════════════════════════════════════════════════
+// MODAL EDIÇÃO GENÉRICA DE REGISTRO (reutilizado por Entradas, Saídas, Devoluções)
+// ════════════════════════════════════════════════════════
+let _editRegistroState = null;
+function abrirModalEditRegistro({ titulo, colecao, id, campos, onSave, extraButtons }) {
+  _editRegistroState = { colecao, id, campos, onSave };
+  document.getElementById('edit-registro-title').textContent = titulo;
+  const container = document.getElementById('edit-registro-fields');
+  container.innerHTML = '';
+  campos.forEach(c => {
+    const wrap = document.createElement('div');
+    wrap.className = 'field-group';
+    const label = document.createElement('label');
+    label.textContent = c.label;
+    let input;
+    if (c.type === 'select') {
+      input = document.createElement('select');
+      (c.options || []).forEach(opt => {
+        const o = document.createElement('option');
+        o.value = opt; o.textContent = opt;
+        if (opt === c.value) o.selected = true;
+        input.appendChild(o);
+      });
+    } else if (c.type === 'textarea') {
+      input = document.createElement('textarea');
+      input.className = 'comp-textarea';
+      input.rows = 2;
+      input.value = c.value ?? '';
+    } else {
+      input = document.createElement('input');
+      input.type = c.type || 'text';
+      input.value = c.value ?? '';
+    }
+    input.dataset.fieldKey = c.key;
+    input.id = `edit-field-${c.key}`;
+    wrap.appendChild(label);
+    wrap.appendChild(input);
+    container.appendChild(wrap);
+  });
+  // Botões extras (ex.: "Gerar novo PDF" na devolução)
+  const modalButtons = document.querySelector('#modal-edit-registro .modal-buttons');
+  modalButtons.querySelectorAll('.extra-btn').forEach(b => b.remove());
+  if (extraButtons) {
+    extraButtons.forEach(b => {
+      const btn = document.createElement('button');
+      btn.className = `btn ${b.className || 'btn-teal'} extra-btn`;
+      btn.style.width = 'auto'; btn.style.padding = '9px 18px';
+      btn.textContent = b.label;
+      btn.onclick = b.onClick;
+      modalButtons.insertBefore(btn, modalButtons.firstChild);
+    });
+  }
+  document.getElementById('modal-edit-registro').classList.add('open');
+}
+function fecharModalEditRegistro() {
+  document.getElementById('modal-edit-registro').classList.remove('open');
+  _editRegistroState = null;
+}
+async function salvarEditRegistro() {
+  if (!_editRegistroState) return;
+  const { colecao, id, campos, onSave } = _editRegistroState;
+  const novosValores = {};
+  campos.forEach(c => {
+    const el = document.getElementById(`edit-field-${c.key}`);
+    novosValores[c.key] = c.type === 'number' ? el.value : el.value;
+  });
+  showLoading('Salvando alterações...');
+  try {
+    await STORAGE.update(colecao, id, novosValores);
+    if (onSave) onSave(novosValores);
+    toast('✅ Registro atualizado!');
+    fecharModalEditRegistro();
+  } catch(e) {
+    toast('❌ Erro ao salvar: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+function toggleAllCb(checked, cls) { document.querySelectorAll('.'+cls).forEach(cb => cb.checked = checked); }
+
+// ════════════════════════════════════════════════════════
+// GERENCIAR SAÍDAS (produtos_saida)
+// ════════════════════════════════════════════════════════
+let _allSaidas = [];
+async function abrirModalSaidas() {
+  showLoading('Carregando saídas...');
+  try {
+    _allSaidas = await STORAGE.get('produtos_saida');
+    document.getElementById('sf-nome').value = '';
+    document.getElementById('sf-lote').value = '';
+    document.getElementById('sf-doc').value = '';
+    document.getElementById('cb-all-saidas').checked = false;
+    saidasRender();
+    document.getElementById('modal-saidas').classList.add('open');
+  } catch(e) {
+    toast('❌ Erro ao carregar: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+function saidasRender() {
+  const fNome = document.getElementById('sf-nome').value.toLowerCase();
+  const fLote = document.getElementById('sf-lote').value.toLowerCase();
+  const fDoc = document.getElementById('sf-doc').value.toLowerCase();
+  const filtrados = _allSaidas.filter(e => (!fNome || (e.nome||'').toLowerCase().includes(fNome)) && (!fLote || (e.lote||'').toLowerCase().includes(fLote)) && (!fDoc || (e.documento||'').toLowerCase().includes(fDoc)));
+  document.getElementById('saidas-count').textContent = `${filtrados.length} de ${_allSaidas.length} registros`;
+  const tb = document.getElementById('tbody-saidas');
+  if(!filtrados.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#a0aec0;padding:20px;">Nenhum registro.</td></tr>'; return; }
+  tb.innerHTML = filtrados.map((e,i) => `<tr${i%2?' style="background:#fafbfd;"':''}>
+    <td class="td-center"><input type="checkbox" class="cb-saida" data-id="${e._id}" style="cursor:pointer;width:15px;height:15px;"></td>
+    <td>${e.nome||'—'}</td><td>${e.lote||'—'}</td><td>${formatarCodigo(e.documento)}</td>
+    <td class="td-center">${e.caixas ?? '—'}</td><td class="td-center">${e.multiplicador ?? '—'}</td>
+    <td class="td-center"><strong>${e.quantidade||'—'}</strong></td>
+    <td class="td-center"><button onclick="saidaEditar('${e._id}')" style="background:#dbeafe;color:#1558b0;border:1px solid #bfdbfe;padding:3px 9px;border-radius:6px;cursor:pointer;font-size:0.76rem;font-weight:700;">✏️</button></td>
+    </tr>`).join('');
+}
+async function saidasDeletarSelecionados() {
+  const selecionados = [...document.querySelectorAll('.cb-saida:checked')].map(cb => cb.dataset.id);
+  if(!selecionados.length) { toast('Selecione registros.', 'err'); return; }
+  if(!confirm(`Excluir ${selecionados.length} registro(s) do Firebase? Esta ação não pode ser desfeita.`)) return;
+  showLoading(`Excluindo ${selecionados.length} registro(s)...`);
+  try {
+    await STORAGE.deleteIds('produtos_saida', selecionados);
+    _allSaidas = _allSaidas.filter(e => !selecionados.includes(e._id));
+    document.getElementById('cb-all-saidas').checked = false;
+    saidasRender();
+    toast(`✅ ${selecionados.length} registro(s) excluído(s)!`);
+  } catch(e) {
+    toast('❌ Erro ao excluir: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+function saidaEditar(id) {
+  const item = _allSaidas.find(x => x._id === id);
+  if(!item) return;
+  abrirModalEditRegistro({
+    titulo: 'Editar Saída',
+    colecao: 'produtos_saida',
+    id: item._id,
+    campos: [
+      { key: 'nome', label: 'Nome do Produto', type: 'text', value: item.nome },
+      { key: 'lote', label: 'Lote', type: 'text', value: item.lote },
+      { key: 'documento', label: 'Orçamento / NF', type: 'text', value: item.documento },
+      { key: 'caixas', label: 'Caixas', type: 'number', value: item.caixas },
+      { key: 'multiplicador', label: 'Multiplicador (Un/Cx)', type: 'number', value: item.multiplicador },
+      { key: 'quantidade', label: 'Quantidade Final (Unidades)', type: 'number', value: item.quantidade },
+    ],
+    onSave: (novosValores) => {
+      Object.assign(item, novosValores);
+      saidasRender();
+    }
+  });
+}
+
+// ════════════════════════════════════════════════════════
+// GERENCIAR DEVOLUÇÕES (produtos_devolucao)
+// ════════════════════════════════════════════════════════
+let _allDevolucoes = [];
+async function abrirModalDevolucoes() {
+  showLoading('Carregando devoluções...');
+  try {
+    _allDevolucoes = await STORAGE.get('produtos_devolucao');
+    document.getElementById('df-nome').value = '';
+    document.getElementById('df-lote').value = '';
+    document.getElementById('df-doc').value = '';
+    document.getElementById('cb-all-dev').checked = false;
+    devolucoesRender();
+    document.getElementById('modal-devolucoes').classList.add('open');
+  } catch(e) {
+    toast('❌ Erro ao carregar: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+function devolucoesRender() {
+  const fNome = document.getElementById('df-nome').value.toLowerCase();
+  const fLote = document.getElementById('df-lote').value.toLowerCase();
+  const fDoc = document.getElementById('df-doc').value.toLowerCase();
+  const filtrados = _allDevolucoes.filter(e => (!fNome || (e.nome||'').toLowerCase().includes(fNome)) && (!fLote || (e.lote||'').toLowerCase().includes(fLote)) && (!fDoc || (e.documento||'').toLowerCase().includes(fDoc)));
+  document.getElementById('devolucoes-count').textContent = `${filtrados.length} de ${_allDevolucoes.length} registros`;
+  const tb = document.getElementById('tbody-devolucoes');
+  if(!filtrados.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#a0aec0;padding:20px;">Nenhum registro.</td></tr>'; return; }
+  tb.innerHTML = filtrados.map((e,i) => `<tr${i%2?' style="background:#fafbfd;"':''}>
+    <td class="td-center"><input type="checkbox" class="cb-dev" data-id="${e._id}" style="cursor:pointer;width:15px;height:15px;"></td>
+    <td>${e.nome||'—'}</td><td>${e.lote||'—'}</td><td>${formatarCodigo(e.documento)}</td>
+    <td class="td-center">${e.quantidade||'—'}</td><td>${e.cliente||'—'}</td><td>${e.motivo||'—'}</td>
+    <td class="td-center"><button onclick="devolucaoEditar('${e._id}')" style="background:#dbeafe;color:#1558b0;border:1px solid #bfdbfe;padding:3px 9px;border-radius:6px;cursor:pointer;font-size:0.76rem;font-weight:700;">✏️</button></td>
+    </tr>`).join('');
+}
+async function devolucoesDeletarSelecionados() {
+  const selecionados = [...document.querySelectorAll('.cb-dev:checked')].map(cb => cb.dataset.id);
+  if(!selecionados.length) { toast('Selecione registros.', 'err'); return; }
+  if(!confirm(`Excluir ${selecionados.length} registro(s) do Firebase? Esta ação não pode ser desfeita.`)) return;
+  showLoading(`Excluindo ${selecionados.length} registro(s)...`);
+  try {
+    await STORAGE.deleteIds('produtos_devolucao', selecionados);
+    _allDevolucoes = _allDevolucoes.filter(e => !selecionados.includes(e._id));
+    document.getElementById('cb-all-dev').checked = false;
+    devolucoesRender();
+    toast(`✅ ${selecionados.length} registro(s) excluído(s)!`);
+  } catch(e) {
+    toast('❌ Erro ao excluir: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+function devolucaoEditar(id) {
+  const item = _allDevolucoes.find(x => x._id === id);
+  if(!item) return;
+  abrirModalEditRegistro({
+    titulo: 'Editar Devolução',
+    colecao: 'produtos_devolucao',
+    id: item._id,
+    campos: [
+      { key: 'nome', label: 'Nome do Produto', type: 'text', value: item.nome },
+      { key: 'lote', label: 'Lote', type: 'text', value: item.lote },
+      { key: 'documento', label: 'Orçamento / NF', type: 'text', value: item.documento },
+      { key: 'quantidade', label: 'Quantidade', type: 'number', value: item.quantidade },
+      { key: 'cliente', label: 'Cliente', type: 'text', value: item.cliente },
+      { key: 'responsavel', label: 'Responsável pela Leitura', type: 'select', value: item.responsavel, options: ['--','Flavio','Valmira','Tiago','Leandro'] },
+      { key: 'motivo', label: 'Motivo de Retorno', type: 'text', value: item.motivo },
+      { key: 'complemento', label: 'Complemento', type: 'text', value: item.complemento },
+    ],
+    onSave: (novosValores) => {
+      Object.assign(item, novosValores);
+      devolucoesRender();
+    },
+    extraButtons: [
+      {
+        label: '🖨️ Gerar Novo PDF',
+        className: 'btn-purple',
+        onClick: () => {
+          const atual = _allDevolucoes.find(x => x._id === id);
+          const itemPDF = {
+            Produto: document.getElementById('edit-field-nome').value,
+            Lote: document.getElementById('edit-field-lote').value,
+            'Orçamento/NF': document.getElementById('edit-field-documento').value,
+            Quantidade: parseInt(document.getElementById('edit-field-quantidade').value) || 0,
+          };
+          const motivo = document.getElementById('edit-field-motivo').value;
+          const complemento = document.getElementById('edit-field-complemento').value;
+          const cliente = document.getElementById('edit-field-cliente').value;
+          const responsavel = document.getElementById('edit-field-responsavel').value;
+          const agora = new Date().toLocaleString('pt-BR');
+          devGerarPDF(itemPDF['Orçamento/NF'], cliente, responsavel, motivo, complemento, agora, [itemPDF]);
+        }
+      }
+    ]
+  });
 }
 
 // MULTIPLICADORES (Caixa → Unidades)
@@ -1575,7 +2129,7 @@ function compRenderCaixas() {
 function compComparar() {
   if(!produtosOrcamento.length || !produtosCaixas.length) { toast('Insira dados de orçamento e caixas.', 'err'); return; }
   const mapOrc = {}; produtosOrcamento.forEach(p => mapOrc[p.Produto] = p.Quantidade);
-  const mapCx = {}; produtosCaixas.forEach(p => mapCx[p.Produto] = (mapCx[p.Produto]||0) + (p.Quantidade * getMultiplicador(p.Produto)));
+  const mapCx = {}; produtosCaixas.forEach(p => mapCx[p.Produto] = (mapCx[p.Produto]||0) + p.Quantidade);
   const todos = [...new Set([...Object.keys(mapOrc),...Object.keys(mapCx)])].sort();
   let hasDivergencia = false;
   const tb = document.getElementById('tbody-comparacao');
@@ -1652,12 +2206,448 @@ function compSalvarModal() {
 }
 function compDeletarCaixa(idx) { if(confirm('Deletar item?')) { produtosCaixas.splice(idx,1); compRenderCaixas(); } }
 
+// ════════════════════════════════════════════════════════
+// MÓDULO – UNIDADES (saída já escaneada em unidades, sem conversão por caixa)
+// ════════════════════════════════════════════════════════
+let produtosUnidades = [];
+let _unidModalEditIdx = null;
+
+function unidProcessarItens() {
+  const data = document.getElementById('unid-input').value.trim();
+  if(!data) { toast('Cole os dados em unidades.', 'err'); return; }
+  if(produtosUnidades.length && !confirm('Substituir dados existentes?')) return;
+  produtosUnidades = [];
+  data.split('\n').forEach(linha => {
+    linha = linha.trim();
+    if(!linha) return;
+    const partes = linha.split(/\s{2,}/);
+    if(partes.length >= 2) {
+      const produto = cleanProductName(partes[0]), lote = partes[1].trim();
+      const found = produtosUnidades.find(p => p.Produto === produto && p.Lote === lote);
+      if(found) found.Quantidade++;
+      else produtosUnidades.push({ Produto: produto, Lote: lote, Quantidade: 1 });
+    }
+  });
+  unidRenderTabela();
+  toast(`✅ ${produtosUnidades.length} produtos processados (em unidades).`);
+}
+
+function unidRenderTabela() {
+  const tb = document.getElementById('tbody-unidades');
+  if(!produtosUnidades.length) { tb.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#a0aec0;padding:24px;">Nenhum dado processado ainda.</td></tr>'; return; }
+  tb.innerHTML = produtosUnidades.map((p,idx) => `<tr>
+      <td>${p.Produto}</td>
+      <td class="td-center"><strong>${p.Quantidade}</strong></td>
+      <td class="td-center">${p.Lote}</td>
+      <td class="td-center"><button onclick="unidAbrirModalEditar(${idx})">✏️</button> <button onclick="unidDeletarItem(${idx})">🗑</button></td>
+    </tr>`).join('');
+}
+
+function unidAbrirModalAdicionar() {
+  _unidModalEditIdx = null;
+  document.getElementById('modal-unidade-title').textContent = 'Adicionar Item';
+  document.getElementById('modal-unidade-produto').value = '';
+  document.getElementById('modal-unidade-quantidade').value = '1';
+  document.getElementById('modal-unidade-lote').value = '';
+  document.getElementById('modal-unidade-multi-input').value = '';
+  document.getElementById('modal-unidade').classList.add('open');
+}
+function unidAbrirModalEditar(idx) {
+  _unidModalEditIdx = idx;
+  const p = produtosUnidades[idx];
+  document.getElementById('modal-unidade-title').textContent = 'Editar Item';
+  document.getElementById('modal-unidade-produto').value = p.Produto;
+  document.getElementById('modal-unidade-quantidade').value = p.Quantidade;
+  document.getElementById('modal-unidade-lote').value = p.Lote;
+  document.getElementById('modal-unidade-multi-input').value = '';
+  document.getElementById('modal-unidade').classList.add('open');
+}
+function fecharModalUnidade() { document.getElementById('modal-unidade').classList.remove('open'); }
+
+function unidProcessarModalMulti() {
+  const data = document.getElementById('modal-unidade-multi-input').value.trim();
+  if(!data) { toast('Nenhum dado.', 'err'); return; }
+  data.split('\n').forEach(linha => {
+    linha = linha.trim();
+    if(!linha) return;
+    const partes = linha.split(/\s{2,}/);
+    if(partes.length >= 2) {
+      const produto = cleanProductName(partes[0]), lote = partes[1].trim();
+      const found = produtosUnidades.find(p => p.Produto === produto && p.Lote === lote);
+      if(found) found.Quantidade++;
+      else produtosUnidades.push({ Produto: produto, Lote: lote, Quantidade: 1 });
+    }
+  });
+  unidRenderTabela();
+  fecharModalUnidade();
+  toast('Itens adicionados!');
+}
+function unidSalvarModal() {
+  const produto = document.getElementById('modal-unidade-produto').value.trim();
+  const lote = document.getElementById('modal-unidade-lote').value.trim();
+  const quantidade = parseInt(document.getElementById('modal-unidade-quantidade').value) || 1;
+  if(!produto || !lote) { toast('Produto e Lote obrigatórios.', 'err'); return; }
+  if(_unidModalEditIdx !== null) {
+    produtosUnidades[_unidModalEditIdx] = { Produto: produto, Quantidade: quantidade, Lote: lote };
+  } else {
+    const found = produtosUnidades.find(p => p.Produto === produto && p.Lote === lote);
+    if(found) found.Quantidade += quantidade;
+    else produtosUnidades.push({ Produto: produto, Quantidade: quantidade, Lote: lote });
+  }
+  unidRenderTabela(); fecharModalUnidade(); toast('Item salvo!');
+}
+function unidDeletarItem(idx) { if(confirm('Deletar item?')) { produtosUnidades.splice(idx,1); unidRenderTabela(); } }
+
+async function unidFinalizarSalvar() {
+  if(!produtosUnidades.length) { toast('Nenhum dado para salvar.', 'err'); return; }
+  const orcamento = document.getElementById('unid-orcamento').value.trim();
+  if(!orcamento) { toast('Informe o número do orçamento/NF.', 'err'); return; }
+  showLoading('Salvando saídas no Firebase...');
+  try {
+    await Promise.all(produtosUnidades.map(p =>
+      STORAGE.add('produtos_saida', { nome: p.Produto, lote: p.Lote, documento: orcamento, quantidade: String(p.Quantidade), criado_em: new Date().toISOString() })
+    ));
+    let csv = 'Produto,Lote,Orçamento,Quantidade(Unidades)\n';
+    produtosUnidades.forEach(p => { csv += `"${p.Produto}","${p.Lote}","${orcamento}","${p.Quantidade}"\n`; });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `Orcamento_${orcamento}_${new Date().toISOString().slice(0,10)}_unidades.csv`;
+    a.click();
+    toast(`✅ Orçamento ${orcamento} salvo no Firebase (em unidades) e exportado!`);
+    unidLimparTudo(true);
+  } catch(e) {
+    toast('❌ Erro ao salvar: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+function unidLimparTudo(silent=false) {
+  if(!silent && !confirm('Limpar todos os dados?')) return;
+  produtosUnidades = [];
+  document.getElementById('unid-orcamento').value = '';
+  document.getElementById('unid-input').value = '';
+  unidRenderTabela();
+  if(!silent) toast('Dados limpos.');
+}
+
+// ════════════════════════════════════════════════════════
+// MÓDULO – ESTOQUE & VALIDADE
+// ════════════════════════════════════════════════════════
+let _stockData = [];
+
+async function stockCarregar() {
+  showLoading('Carregando estoque...');
+  try {
+    const [entradas, saidas, devolucoes] = await Promise.all([
+      STORAGE.get('produtos_entrada'), STORAGE.get('produtos_saida'), STORAGE.get('produtos_devolucao')
+    ]);
+
+    // Agrupa entradas por nome+lote (soma quantidades caso existam várias entradas do mesmo lote)
+    const grupos = {};
+    entradas.forEach(e => {
+      const key = `${e.nome}||${e.lote}`;
+      if (!grupos[key]) {
+        grupos[key] = {
+          nome: e.nome, lote: e.lote, codigo: e.codigo,
+          produzido: 0, data_vencimento: e.data_vencimento
+        };
+      }
+      grupos[key].produzido += parseInt(e.quantidade) || 0;
+      // Mantém a data de vencimento mais antiga registrada (caso haja divergência entre entradas)
+      if (e.data_vencimento && (!grupos[key].data_vencimento || e.data_vencimento < grupos[key].data_vencimento)) {
+        grupos[key].data_vencimento = e.data_vencimento;
+      }
+      if (!grupos[key].codigo && e.codigo) grupos[key].codigo = e.codigo;
+    });
+
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+
+    _stockData = Object.values(grupos).map(g => {
+      const totalSaida = saidas.filter(s => s.nome === g.nome && s.lote === g.lote)
+        .reduce((a,s) => a + (parseInt(s.quantidade)||0), 0);
+      const totalDev = devolucoes.filter(d => d.nome === g.nome && d.lote === g.lote)
+        .reduce((a,d) => a + (parseInt(d.quantidade)||0), 0);
+      const saldo = g.produzido - totalSaida + totalDev;
+
+      let diasParaVencer = null;
+      if (g.data_vencimento) {
+        const venc = new Date(g.data_vencimento + 'T00:00:00');
+        diasParaVencer = Math.round((venc - hoje) / 86400000);
+      }
+      return { ...g, saldo, diasParaVencer };
+    }).filter(item => item.saldo > 0); // só exibe o que ainda há em estoque
+
+    stockRender();
+    toast(`✅ Estoque atualizado — ${_stockData.length} lote(s) com saldo positivo.`);
+  } catch(e) {
+    toast('❌ Erro ao carregar: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+
+function stockClassificar(item, diasAlerta) {
+  if (item.diasParaVencer === null) return 'sem-data';
+  if (item.diasParaVencer < 0) return 'vencido';
+  if (item.diasParaVencer <= diasAlerta) return 'proximo';
+  return 'ok';
+}
+
+function stockRender() {
+  const busca = document.getElementById('stock-busca').value.trim().toLowerCase();
+  const filtroStatus = document.getElementById('stock-filtro-status').value;
+  const diasAlerta = parseInt(document.getElementById('stock-dias-alerta').value) || 30;
+
+  // Calcula contadores gerais (sobre todo o dataset, não apenas filtrado)
+  let totalUnidades = 0, totalVencidos = 0, totalProximos = 0;
+  _stockData.forEach(item => {
+    totalUnidades += item.saldo;
+    const status = stockClassificar(item, diasAlerta);
+    if (status === 'vencido') totalVencidos++;
+    else if (status === 'proximo') totalProximos++;
+  });
+  document.getElementById('stock-total-lotes').textContent = _stockData.length;
+  document.getElementById('stock-total-unidades').textContent = totalUnidades;
+  document.getElementById('stock-total-proximos').textContent = totalProximos;
+  document.getElementById('stock-total-vencidos').textContent = totalVencidos;
+
+  // Aplica filtros
+  let filtrados = _stockData.filter(item => {
+    if (busca && !item.nome.toLowerCase().includes(busca)) return false;
+    const status = stockClassificar(item, diasAlerta);
+    if (filtroStatus === 'vencido' && status !== 'vencido') return false;
+    if (filtroStatus === 'proximo' && status !== 'proximo') return false;
+    if (filtroStatus === 'ok' && !(status === 'ok' || status === 'sem-data')) return false;
+    return true;
+  });
+
+  // Ordena: vencidos primeiro, depois mais próximos do vencimento, depois sem data, por último ok
+  filtrados.sort((a,b) => {
+    const da = a.diasParaVencer === null ? Infinity : a.diasParaVencer;
+    const db = b.diasParaVencer === null ? Infinity : b.diasParaVencer;
+    return da - db;
+  });
+
+  const tb = document.getElementById('tbody-estoque');
+  if (!filtrados.length) {
+    tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#a0aec0;padding:24px;">Nenhum item encontrado.</td></tr>';
+    return;
+  }
+  tb.innerHTML = filtrados.map(item => {
+    const status = stockClassificar(item, diasAlerta);
+    let rowClass = '', badge = '';
+    if (status === 'vencido') {
+      rowClass = 'tr-expired';
+      badge = `<span class="badge badge-expired">⛔ Vencido há ${Math.abs(item.diasParaVencer)} dia(s)</span>`;
+    } else if (status === 'proximo') {
+      rowClass = 'tr-warn';
+      badge = `<span class="badge badge-warn">⚠️ Vence em ${item.diasParaVencer} dia(s)</span>`;
+    } else if (status === 'ok') {
+      badge = `<span class="badge badge-ok">✅ OK (${item.diasParaVencer} dias)</span>`;
+    } else {
+      badge = `<span class="badge badge-zero">— Sem data</span>`;
+    }
+    return `<tr class="${rowClass}">
+      <td>${item.nome}</td>
+      <td class="td-center">${formatarCodigo(item.codigo) || '—'}</td>
+      <td class="td-center">${item.lote}</td>
+      <td class="td-center"><strong>${item.saldo}</strong></td>
+      <td class="td-center">${formatarData(item.data_vencimento) || '—'}</td>
+      <td class="td-center">${item.diasParaVencer === null ? '—' : item.diasParaVencer}</td>
+      <td class="td-center">${badge}</td>
+    </tr>`;
+  }).join('');
+}
+
+function stockGerarPDF() {
+  if (!_stockData.length) { toast('Carregue os dados do estoque primeiro.', 'err'); return; }
+  const diasAlerta = parseInt(document.getElementById('stock-dias-alerta').value) || 30;
+  const agora = new Date();
+  const dataFmt = agora.toLocaleDateString('pt-BR');
+  const horaFmt = agora.toLocaleTimeString('pt-BR');
+
+  const ordenados = [..._stockData].sort((a,b) => {
+    const da = a.diasParaVencer === null ? Infinity : a.diasParaVencer;
+    const db = b.diasParaVencer === null ? Infinity : b.diasParaVencer;
+    return da - db;
+  });
+
+  let totalUnidades = 0, totalVencidos = 0, totalProximos = 0;
+  const linhas = ordenados.map((item, i) => {
+    totalUnidades += item.saldo;
+    const status = stockClassificar(item, diasAlerta);
+    let statusTxt = '', statusColor = '#155724', statusBg = '#d4edda';
+    if (status === 'vencido') { totalVencidos++; statusTxt = `Vencido (${Math.abs(item.diasParaVencer)}d)`; statusColor = '#721c24'; statusBg = '#f8d7da'; }
+    else if (status === 'proximo') { totalProximos++; statusTxt = `Vence em ${item.diasParaVencer}d`; statusColor = '#7c4a00'; statusBg = '#fff3cd'; }
+    else if (status === 'ok') { statusTxt = `OK (${item.diasParaVencer}d)`; }
+    else { statusTxt = 'Sem data'; statusColor = '#6b7a99'; statusBg = '#eef1f7'; }
+
+    return `<tr class="${i%2?'alt':''}">
+      <td>${item.nome}</td>
+      <td class="num">${formatarCodigo(item.codigo) || '—'}</td>
+      <td class="num">${item.lote}</td>
+      <td class="num"><strong>${item.saldo}</strong></td>
+      <td class="num">${formatarData(item.data_vencimento) || '—'}</td>
+      <td class="num"><span style="background:${statusBg};color:${statusColor};padding:2px 8px;border-radius:10px;font-weight:800;font-size:9px;">${statusTxt}</span></td>
+    </tr>`;
+  }).join('');
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+  <title>Relatório de Estoque & Validade</title>
+  <style>
+    @page { size: A4; margin: 14mm 16mm; }
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1d23; font-size: 11px; line-height: 1.5; margin: 0; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #b91c1c; padding-bottom: 10px; margin-bottom: 16px; page-break-after: avoid; }
+    .header .brand .logo { font-size: 22px; font-weight: 900; letter-spacing: 3px; color: #1a2a4a; }
+    .header .brand .sub { font-size: 10px; color: #6b7a99; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 2px; }
+    .header .meta { text-align: right; font-size: 10px; color: #6b7a99; }
+    .header .meta .title { font-size: 15px; font-weight: 800; color: #1a2a4a; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; page-break-inside: avoid; }
+    .summary-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; text-align: center; border-top: 4px solid #c8d0de; }
+    .summary-card.total { border-top-color: #1558b0; }
+    .summary-card.unidades { border-top-color: #1a7f3c; }
+    .summary-card.proximo { border-top-color: #b7791f; }
+    .summary-card.vencido { border-top-color: #c0392b; }
+    .summary-card .label { font-size: 8.5px; font-weight: 800; color: #6b7a99; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 4px; }
+    .summary-card .value { font-size: 20px; font-weight: 900; color: #1a2a4a; }
+    table { width: 100%; border-collapse: collapse; page-break-inside: auto; }
+    thead { display: table-header-group; }
+    tr { page-break-inside: avoid; page-break-after: auto; }
+    thead th { background: #b91c1c; color: #fff; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; padding: 7px 10px; text-align: left; }
+    thead th.num, td.num { text-align: center; }
+    tbody td { padding: 6px 10px; border-bottom: 1px solid #eef1f7; font-size: 10.5px; }
+    tbody tr.alt { background: #f8fafc; }
+    .footer { margin-top: 22px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-size: 9px; color: #a0aec0; }
+    .print-btn { display: block; margin: 20px auto 0; padding: 10px 28px; background: #b91c1c; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    @media print { .print-btn { display: none; } }
+  </style></head><body>
+    <div class="header">
+      <div class="brand">
+        <div class="logo">LNP</div>
+        <div class="sub">Sistema de Controle de Estoque</div>
+      </div>
+      <div class="meta">
+        <div class="title">Relatório de Estoque & Validade</div>
+        <div>Emitido em ${dataFmt} às ${horaFmt}</div>
+        <div>Alerta de vencimento: ${diasAlerta} dia(s)</div>
+      </div>
+    </div>
+    <div class="summary-grid">
+      <div class="summary-card total"><div class="label">Lotes em Estoque</div><div class="value">${ordenados.length}</div></div>
+      <div class="summary-card unidades"><div class="label">Total Unidades</div><div class="value">${totalUnidades}</div></div>
+      <div class="summary-card proximo"><div class="label">Próx. Vencimento</div><div class="value">${totalProximos}</div></div>
+      <div class="summary-card vencido"><div class="label">Vencidos</div><div class="value">${totalVencidos}</div></div>
+    </div>
+    <table>
+      <thead><tr>
+        <th>Produto</th><th class="num">Código</th><th class="num">Lote</th>
+        <th class="num">Saldo</th><th class="num">Vencimento</th><th class="num">Status</th>
+      </tr></thead>
+      <tbody>${linhas}</tbody>
+    </table>
+    <div class="footer">Documento gerado automaticamente pelo Sistema LNP em ${dataFmt} ${horaFmt}.</div>
+    <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+  </body></html>`);
+  win.document.close();
+}
+
+// MOTIVOS DE DEVOLUÇÃO (editáveis pelo usuário)
+async function carregarMotivos() {
+  try {
+    const docs = await STORAGE.get('motivos_devolucao');
+    if (!docs.length) {
+      await Promise.all(MOTIVOS_SEED.map(m => STORAGE.add('motivos_devolucao', { texto: m })));
+      const novos = await STORAGE.get('motivos_devolucao');
+      motivos = novos.sort((a,b) => a.texto.localeCompare(b.texto));
+    } else {
+      motivos = docs.sort((a,b) => a.texto.localeCompare(b.texto));
+    }
+    buildMotivoList();
+  } catch(e) {
+    console.warn('Erro ao carregar motivos:', e.message);
+    motivos = MOTIVOS_SEED.map(m => ({ texto: m, _id: null }));
+    buildMotivoList();
+  }
+}
+async function adicionarMotivoNovo(texto) {
+  texto = texto.trim();
+  if (!texto) return null;
+  const existente = motivos.find(m => m.texto.toLowerCase() === texto.toLowerCase());
+  if (existente) return existente.texto;
+  try {
+    const id = await STORAGE.add('motivos_devolucao', { texto });
+    motivos.push({ texto, _id: id });
+    motivos.sort((a,b) => a.texto.localeCompare(b.texto));
+    buildMotivoList();
+    toast('✅ Novo motivo cadastrado!');
+  } catch(e) {
+    toast('⚠️ Motivo usado, mas não foi salvo na lista (sem conexão).', 'err');
+  }
+  return texto;
+}
+
 // DEVOLUÇÃO
 function buildMotivoList() {
-  const list = document.getElementById('motivo-list');
-  motivos.forEach(m => { const d = document.createElement('div'); d.textContent = m; d.onclick = () => { document.getElementById('motivo-btn').textContent = m; document.getElementById('motivo-btn').dataset.selected = m; list.classList.remove('open'); }; list.appendChild(d); });
+  motivoFiltrar();
 }
-function toggleMotivo() { document.getElementById('motivo-list').classList.toggle('open'); }
+function motivoAbrirLista() {
+  motivoFiltrar();
+  document.getElementById('motivo-list').classList.add('open');
+}
+function motivoFiltrar() {
+  const input = document.getElementById('motivo-input');
+  const filtro = input.value.trim().toLowerCase();
+  const list = document.getElementById('motivo-list');
+  const filtrados = motivos.filter(m => m.texto.toLowerCase().includes(filtro));
+  list.innerHTML = '';
+
+  if (filtrados.length) {
+    filtrados.forEach(m => {
+      const d = document.createElement('div');
+      d.textContent = m.texto;
+      if (m.texto === input.dataset.selected) d.classList.add('selected');
+      d.onclick = () => motivoSelecionar(m.texto);
+      list.appendChild(d);
+    });
+  } else {
+    const empty = document.createElement('div');
+    empty.className = 'empty-msg';
+    empty.textContent = 'Nenhum motivo encontrado.';
+    list.appendChild(empty);
+  }
+
+  // Opção de adicionar novo motivo, se o texto digitado não existir exatamente
+  if (filtro && !motivos.some(m => m.texto.toLowerCase() === filtro)) {
+    const add = document.createElement('div');
+    add.className = 'add-new';
+    add.textContent = `➕ Adicionar e usar: "${input.value.trim()}"`;
+    add.onclick = async () => {
+      const texto = await adicionarMotivoNovo(input.value.trim());
+      motivoSelecionar(texto);
+    };
+    list.appendChild(add);
+  }
+
+  list.classList.add('open');
+}
+function motivoSelecionar(texto) {
+  const input = document.getElementById('motivo-input');
+  input.value = texto;
+  input.dataset.selected = texto;
+  document.getElementById('motivo-list').classList.remove('open');
+}
+async function motivoConfirmarDigitado() {
+  const input = document.getElementById('motivo-input');
+  const texto = input.value.trim();
+  if (!texto) return;
+  const existente = motivos.find(m => m.texto.toLowerCase() === texto.toLowerCase());
+  if (existente) {
+    motivoSelecionar(existente.texto);
+  } else {
+    const novo = await adicionarMotivoNovo(texto);
+    motivoSelecionar(novo);
+  }
+}
+
 function devProcessarScan() {
   const scanText = document.getElementById('dev-scan').value.trim();
   if(!scanText) return;
@@ -1695,14 +2685,19 @@ function devLimpar() {
   devScanData = []; devSelectedIdx = -1;
   ['dev-orcamento','dev-cliente','dev-complemento','dev-scan'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('dev-responsavel').value = '--';
-  document.getElementById('motivo-btn').textContent = 'Selecione um motivo';
-  document.getElementById('motivo-btn').dataset.selected = '';
+  const motivoInput = document.getElementById('motivo-input');
+  motivoInput.value = '';
+  motivoInput.dataset.selected = '';
   devRenderTabela();
 }
 async function devFinalizar() {
   if(!devScanData.length) { toast('Nenhum item escaneado.', 'err'); return; }
-  const motivo = document.getElementById('motivo-btn').dataset.selected || '';
-  if(!motivo) { toast('Selecione um motivo.', 'err'); return; }
+  const motivoInput = document.getElementById('motivo-input');
+  const motivo = (motivoInput.dataset.selected || motivoInput.value).trim();
+  if(!motivo) { toast('Selecione ou digite um motivo.', 'err'); return; }
+  if (motivo === motivoInput.value.trim() && !motivos.some(m => m.texto.toLowerCase() === motivo.toLowerCase())) {
+    await adicionarMotivoNovo(motivo);
+  }
   const orcamento = document.getElementById('dev-orcamento').value.trim();
   const cliente = document.getElementById('dev-cliente').value.trim();
   const responsavel = document.getElementById('dev-responsavel').value;
@@ -1721,16 +2716,228 @@ async function devFinalizar() {
 }
 function devGerarPDF(orcamento, cliente, responsavel, motivo, complemento, agora, itens) {
   const win = window.open('', '_blank');
-  const linhasTabela = itens.map(item => `<tr><td style="border:1px solid #ccc;padding:5px;">${item.Produto}</td><td style="border:1px solid #ccc;text-align:center;">${item.Lote}</td><td style="border:1px solid #ccc;text-align:center;">${item['Orçamento/NF']}</td><td style="border:1px solid #ccc;text-align:center;">${item.Quantidade}</td></tr>`).join('');
-  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Devolução</title><style>body{font-family:Arial;margin:20px;}table{width:100%;border-collapse:collapse;}th,td{border:1px solid #ccc;padding:8px;}</style></head><body>
-    <h1>Formulário de Devolução</h1><hr>
-    <p><strong>Cliente:</strong> ${cliente||'—'} | <strong>Data:</strong> ${agora}</p>
-    <p><strong>Orçamento/NF:</strong> ${orcamento||'—'} | <strong>Responsável:</strong> ${responsavel}</p>
-    <h3>Produtos Devolvidos</h3>
-    <table><thead><tr><th>Produto</th><th>Lote</th><th>Orçamento/NF</th><th>Qtd</th></tr></thead><tbody>${linhasTabela}</tbody></table>
-    <p><strong>Motivo:</strong> ${motivo}</p>
-    <p><strong>Complemento:</strong> ${complemento||'—'}</p>
-    <button onclick="window.print()">Imprimir PDF</button></body></html>`);
+  const totalUn = itens.reduce((a,i) => a + i.Quantidade, 0);
+
+  const linhasTabela = itens.map((item, i) => `<tr class="${i%2?'alt':''}">
+      <td>${item.Produto}</td>
+      <td class="num" style="text-align:center;">${item.Lote}</td>
+      <td class="num" style="text-align:center;">${item['Orçamento/NF']}</td>
+      <td class="num">${item.Quantidade}</td>
+    </tr>`).join('');
+
+  const complementoHtml = (complemento && complemento !== motivo)
+    ? `<div class="complemento">Complemento: ${complemento}</div>` : '';
+
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+  <title>Devolução – ${orcamento || 'sem-numero'}</title>
+  <style>
+    @page { size: A4; margin: 14mm 16mm; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #1a1d23; font-size: 11px; line-height: 1.5; margin: 0;
+    }
+
+    /* CABEÇALHO */
+    .header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      border-bottom: 3px solid #6930b8; padding-bottom: 10px; margin-bottom: 16px;
+      page-break-after: avoid;
+    }
+    .header .brand { display:flex; flex-direction:column; }
+    .header .brand .logo { font-size: 22px; font-weight: 900; letter-spacing: 3px; color: #1a2a4a; }
+    .header .brand .sub { font-size: 10px; color: #6b7a99; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 2px; }
+    .header .meta { text-align: right; font-size: 10px; color: #6b7a99; }
+    .header .meta .title { font-size: 15px; font-weight: 800; color: #1a2a4a; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+
+    /* TÍTULO CENTRAL */
+    .doc-title {
+      text-align: center; font-size: 14px; font-weight: 800; color: #1a2a4a;
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 8px 0; border-bottom: 2px solid #d8c8f0; margin-bottom: 14px;
+      page-break-after: avoid;
+    }
+
+    /* SEÇÕES */
+    .section-title {
+      font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+      color: #6930b8; background: #f3eefc;
+      padding: 5px 10px; margin: 16px 0 8px; border-radius: 4px;
+      display: flex; align-items: center; gap: 6px;
+      page-break-after: avoid;
+    }
+    .section-title:first-of-type { margin-top: 0; }
+    .section-title .ico { font-size: 13px; }
+
+    /* GRID DE IDENTIFICAÇÃO */
+    .id-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
+      padding: 12px 14px;
+      page-break-inside: avoid;
+    }
+    .id-grid .item { display:flex; flex-direction:column; gap:2px; }
+    .id-grid .label { font-size: 8.5px; font-weight: 800; color: #6b7a99; text-transform: uppercase; letter-spacing: .8px; }
+    .id-grid .value { font-size: 12px; font-weight: 700; color: #1a2a4a; }
+
+    /* TABELA */
+    table { width: 100%; border-collapse: collapse; page-break-inside: auto; }
+    thead { display: table-header-group; }
+    tfoot { display: table-footer-group; }
+    tr { page-break-inside: avoid; page-break-after: auto; }
+    thead th {
+      background: #6930b8; color: #fff;
+      font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px;
+      padding: 7px 10px; text-align: left;
+    }
+    thead th.num, td.num { text-align: center; }
+    tbody td { padding: 6px 10px; border-bottom: 1px solid #eef1f7; font-size: 10.5px; }
+    tbody tr.alt { background: #f8fafc; }
+    tfoot td { padding: 7px 10px; font-weight: 800; font-size: 10.5px; border-top: 2px solid #1a2a4a; background: #f8fafc; }
+
+    /* MOTIVO */
+    .motivo-box {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px;
+      padding: 10px 14px; font-size: 11px; color: #1a2a4a; font-weight: 600;
+    }
+    .complemento { margin-top: 6px; font-size: 9.5px; color: #6b7a99; font-style: italic; }
+
+    /* OBSERVAÇÕES */
+    .obs-line {
+      border-bottom: 1px solid #c8d0de; height: 22px; margin-bottom: 6px;
+    }
+
+    /* ASSINATURAS */
+    .sign-block { margin-bottom: 10px; }
+    .sign-line {
+      display: flex; align-items: baseline; gap: 6px; font-size: 10px; color: #4a5568;
+    }
+    .sign-line .fill { flex: 1; border-bottom: 1px solid #a0aec0; height: 1px; margin-bottom: 2px; }
+
+    .checkbox-row { font-size: 10px; color: #1a2a4a; font-weight: 700; margin: 10px 0; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+    .checkbox-row .visto { font-weight: 400; color: #4a5568; flex:1; display:flex; align-items:baseline; gap:6px; }
+    .checkbox-row .visto .fill { flex: 1; border-bottom: 1px solid #a0aec0; height: 1px; margin-bottom: 2px; }
+    .box { display: inline-block; width: 10px; height: 10px; border: 1.4px solid #4a5568; margin-right: 3px; vertical-align: middle; }
+
+    .disposicao-note { font-size: 9px; font-weight: 800; color: #1a2a4a; margin: 8px 0 4px; text-transform: uppercase; letter-spacing: .4px; }
+    .disposicao-opts { font-size: 10px; color: #4a5568; display: flex; gap: 24px; }
+
+    /* RODAPÉ */
+    .footer {
+      margin-top: 22px; padding-top: 8px; border-top: 1px solid #e2e8f0;
+      font-size: 8px; color: #a0aec0; line-height: 1.6;
+      display: flex; justify-content: space-between; gap: 20px;
+    }
+    .footer .info { flex: 1; }
+    .footer .revisions { flex: 1.4; text-align: right; }
+
+    .print-btn {
+      display: block; margin: 20px auto 0; padding: 10px 28px;
+      background: #6930b8; color: #fff; border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    @media print { .print-btn { display: none; } }
+  </style></head><body>
+
+    <!-- CABEÇALHO -->
+    <div class="header">
+      <div class="brand">
+        <div class="logo">LNP</div>
+        <div class="sub">Sistema de Controle de Estoque</div>
+      </div>
+      <div class="meta">
+        <div class="title">Comprovante de Devolução</div>
+        <div>Emitido em ${agora}</div>
+        ${orcamento ? `<div>Orçamento/NF: <strong style="color:#1a2a4a;">${orcamento}</strong></div>` : ''}
+      </div>
+    </div>
+
+    <div class="doc-title">Formulário de Controle de Retorno de Produtos</div>
+
+    <!-- IDENTIFICAÇÃO -->
+    <div class="section-title"><span class="ico">🧾</span> Identificação</div>
+    <div class="id-grid">
+      <div class="item"><span class="label">Cliente</span><span class="value">${cliente || '—'}</span></div>
+      <div class="item"><span class="label">Data / Hora</span><span class="value">${agora}</span></div>
+      <div class="item"><span class="label">Orçamento / Nota Fiscal</span><span class="value">${orcamento || '—'}</span></div>
+      <div class="item"><span class="label">Responsável pela Leitura</span><span class="value">${responsavel}</span></div>
+    </div>
+
+    <!-- PRODUTOS -->
+    <div class="section-title"><span class="ico">📦</span> Produtos Devolvidos</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th class="num">Lote</th>
+          <th class="num">Orçamento/NF</th>
+          <th class="num">Qtd</th>
+        </tr>
+      </thead>
+      <tbody>${linhasTabela}</tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3">TOTAL DE ITENS: ${itens.length}</td>
+          <td class="num">${totalUn}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- MOTIVO -->
+    <div class="section-title"><span class="ico">📋</span> Motivo de Retorno</div>
+    <div class="motivo-box">
+      ${motivo || 'Não informado.'}
+      ${complementoHtml}
+    </div>
+
+    <!-- OBSERVAÇÕES -->
+    <div class="section-title"><span class="ico">📝</span> Observações Adicionais</div>
+    <div class="obs-line"></div>
+    <div class="obs-line"></div>
+    <div class="obs-line"></div>
+
+    <!-- AVALIAÇÃO E ASSINATURAS -->
+    <div class="section-title"><span class="ico">✅</span> Avaliação e Assinaturas</div>
+    <div class="sign-block">
+      <div class="sign-line"><span>Responsável pela leitura:</span><span class="fill"></span></div>
+    </div>
+    <div class="sign-block">
+      <div class="sign-line"><span>Avaliação pela gerência:</span><span class="fill"></span></div>
+    </div>
+
+    <div class="checkbox-row">
+      <span>O retorno será aceito? &nbsp; <span class="box"></span> Sim &nbsp;&nbsp; <span class="box"></span> Não</span>
+      <span class="visto">Visto gerência:<span class="fill"></span></span>
+    </div>
+
+    <div style="font-size:10px;font-weight:800;color:#1a2a4a;margin:8px 0 6px;">Se o retorno for aceito:</div>
+    <div class="sign-block">
+      <div class="sign-line"><span>Conferência pelo auxiliar de expedição na entrega:</span><span class="fill"></span></div>
+    </div>
+    <div class="sign-block">
+      <div class="sign-line"><span>Visto do auxiliar de expedição:</span><span class="fill"></span></div>
+    </div>
+
+    <div class="disposicao-note">(Manter produtos segregados e identificados como "Produto não conforme")</div>
+    <div class="disposicao-opts">
+      <span>Disposição:</span>
+      <span><span class="box"></span> Descarte dos produtos</span>
+      <span><span class="box"></span> Retorno ao estoque</span>
+    </div>
+
+    <!-- RODAPÉ -->
+    <div class="footer">
+      <div class="info">Documento gerado automaticamente pelo Sistema LNP em ${agora}.</div>
+      <div class="revisions">
+        Revisão 00: 13/07/2017 – inicial &nbsp;|&nbsp;
+        Revisão 01: 20/02/2018 – alteração no layout &nbsp;|&nbsp;
+        Revisão 02: 27/03/2025 – alteração no layout
+      </div>
+    </div>
+
+    <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+  </body></html>`);
   win.document.close();
 }
 
