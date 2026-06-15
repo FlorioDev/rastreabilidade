@@ -480,6 +480,16 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
 .entries-filters {
   display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end;
 }
+.cleanup-bar {
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end;
+  border-top: 1px dashed #d0d8e8; padding-top: 10px; margin-top: 2px;
+}
+.cleanup-bar .cleanup-label {
+  font-size: 0.74rem; color: #6b7a99; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .6px;
+  width: 100%; margin-bottom: -2px;
+}
+.cleanup-bar .field-group { flex: 1; min-width: 160px; }
 .entries-filters input {
   background: #f8fafc; border: 1px solid #c8d0de;
   border-radius: 7px; color: #1a1d23;
@@ -535,6 +545,7 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
       <div class="module-desc">Visão geral do estoque atual com alertas de produtos próximos do vencimento.</div>
     </div>
   </div>
+  <button class="btn btn-gray" style="width:auto;padding:9px 22px;margin-top:32px;" onclick="document.getElementById('modal-import-db').classList.add('open')">📥 Importar Dados Legados (.db)</button>
 </div>
 
 <!-- MÓDULO 1 – RASTREABILIDADE -->
@@ -904,6 +915,19 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
       <input id="ef-doc"  type="text" placeholder="Filtrar por documento..." oninput="entriesRender()">
       <button class="btn btn-red" style="width:auto;padding:7px 18px;flex-shrink:0;" onclick="trackDeletarSelecionados()">🗑 Excluir Selecionados</button>
     </div>
+    <div class="cleanup-bar">
+      <div class="cleanup-label">🧹 Limpeza de Registros Antigos</div>
+      <div class="field-group">
+        <label>Excluir entradas vencidas antes de</label>
+        <input id="ef-cutoff-venc" type="date">
+      </div>
+      <button class="btn btn-orange" style="width:auto;padding:7px 18px;flex-shrink:0;" onclick="entriesExcluirAntigosPorVencimento()">🗑️ Excluir Vencidos</button>
+      <div class="field-group">
+        <label>Excluir registros criados antes de</label>
+        <input id="ef-cutoff-criado" type="date">
+      </div>
+      <button class="btn btn-orange" style="width:auto;padding:7px 18px;flex-shrink:0;" onclick="entriesExcluirAntigosPorCriacao()">🗑️ Excluir Antigos</button>
+    </div>
     <div class="table-wrapper" style="max-height:420px;overflow-y:auto;">
       <table>
         <thead><tr><th style="width:36px;"><input type="checkbox" id="cb-all" onchange="entriesToggleAll(this.checked)"></th><th>Nome</th><th>Lote</th><th>Documento</th><th class="td-center">Qtd</th><th class="td-center">Lançamento</th><th class="td-center">Vencimento</th><th class="td-center" style="width:70px;">Ações</th></tr></thead>
@@ -929,6 +953,14 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
       <input id="sf-doc"  type="text" placeholder="Filtrar por orçamento..." oninput="saidasRender()">
       <button class="btn btn-red" style="width:auto;padding:7px 18px;flex-shrink:0;" onclick="saidasDeletarSelecionados()">🗑 Excluir Selecionados</button>
     </div>
+    <div class="cleanup-bar">
+      <div class="cleanup-label">🧹 Limpeza de Registros Antigos</div>
+      <div class="field-group">
+        <label>Excluir registros criados antes de</label>
+        <input id="sf-cutoff-criado" type="date">
+      </div>
+      <button class="btn btn-orange" style="width:auto;padding:7px 18px;flex-shrink:0;" onclick="saidasExcluirAntigos()">🗑️ Excluir Antigos</button>
+    </div>
     <div class="table-wrapper" style="max-height:420px;overflow-y:auto;">
       <table>
         <thead><tr><th style="width:36px;"><input type="checkbox" id="cb-all-saidas" onchange="toggleAllCb(this.checked,'cb-saida')"></th><th>Nome</th><th>Lote</th><th>Orçamento/NF</th><th class="td-center">Caixas</th><th class="td-center">Mult.</th><th class="td-center">Qtd (Un)</th><th class="td-center" style="width:70px;">Ações</th></tr></thead>
@@ -953,6 +985,14 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
       <input id="df-lote" type="text" placeholder="Filtrar por lote..." oninput="devolucoesRender()">
       <input id="df-doc"  type="text" placeholder="Filtrar por orçamento/NF..." oninput="devolucoesRender()">
       <button class="btn btn-red" style="width:auto;padding:7px 18px;flex-shrink:0;" onclick="devolucoesDeletarSelecionados()">🗑 Excluir Selecionados</button>
+    </div>
+    <div class="cleanup-bar">
+      <div class="cleanup-label">🧹 Limpeza de Registros Antigos</div>
+      <div class="field-group">
+        <label>Excluir registros criados antes de</label>
+        <input id="df-cutoff-criado" type="date">
+      </div>
+      <button class="btn btn-orange" style="width:auto;padding:7px 18px;flex-shrink:0;" onclick="devolucoesExcluirAntigos()">🗑️ Excluir Antigos</button>
     </div>
     <div class="table-wrapper" style="max-height:420px;overflow-y:auto;">
       <table>
@@ -1008,6 +1048,28 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
     </div>
     <div class="modal-buttons">
       <button class="btn btn-gray" onclick="fecharModalMultiplicadores()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IMPORTAÇÃO DE DADOS LEGADOS (.db) -->
+<div id="modal-import-db" class="modal-overlay">
+  <div class="modal-box" style="width:600px;">
+    <div class="modal-title">📥 Importar Dados Legados (.db)</div>
+    <div style="font-size:0.82rem;color:#6b7a99;line-height:1.65;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;">
+      Selecione um arquivo <strong>.db</strong> (SQLite) do sistema antigo em Python — <code>entrada.db</code>, <code>saida.db</code> ou <code>devolucao.db</code>.
+      O sistema identifica automaticamente o tipo pela tabela interna e importa todos os registros para a coleção correspondente no Firebase.
+      <br><br>
+      ⚠️ Esta operação pode levar alguns minutos para arquivos grandes (milhares de registros) e <strong>não pode ser desfeita automaticamente</strong>. Evite importar o mesmo arquivo duas vezes (isso criaria registros duplicados).
+    </div>
+    <div class="field-group">
+      <label>Arquivo .db</label>
+      <input id="import-db-file" type="file" accept=".db">
+    </div>
+    <div id="import-db-status" style="font-size:0.82rem;color:#1a2a4a;font-weight:700;min-height:1.2em;"></div>
+    <div class="modal-buttons">
+      <button class="btn btn-gray" onclick="document.getElementById('modal-import-db').classList.remove('open')">Fechar</button>
+      <button class="btn btn-blue" onclick="iniciarImportacaoDb()">📥 Importar Arquivo</button>
     </div>
   </div>
 </div>
@@ -1178,6 +1240,32 @@ const STORAGE = {
   async update(colecao, id, dados) {
     if (!db) throw new Error('Firebase não disponível. Verifique sua conexão.');
     await db.collection(colecao).doc(id).update(dados);
+  },
+  async deleteOlderThan(colecao, field, cutoffValue) {
+    if (!db) throw new Error('Firebase não disponível. Verifique sua conexão.');
+    let total = 0;
+    while (true) {
+      const snap = await db.collection(colecao).where(field, '<', cutoffValue).limit(450).get();
+      if (snap.empty) break;
+      const batch = db.batch();
+      snap.docs.forEach(d => batch.delete(d.ref));
+      await batch.commit();
+      total += snap.docs.length;
+      showLoading(`Excluindo registros antigos... (${total} até agora)`);
+      if (snap.docs.length < 450) break;
+    }
+    return total;
+  },
+  async addBatch(colecao, docs, onProgress) {
+    if (!db) throw new Error('Firebase não disponível. Verifique sua conexão.');
+    const CHUNK = 450;
+    for (let i = 0; i < docs.length; i += CHUNK) {
+      const chunk = docs.slice(i, i + CHUNK);
+      const batch = db.batch();
+      chunk.forEach(d => batch.set(db.collection(colecao).doc(), d));
+      await batch.commit();
+      if (onProgress) onProgress(Math.min(i + CHUNK, docs.length), docs.length);
+    }
   }
 };
 
@@ -1676,6 +1764,34 @@ async function trackDeletarSelecionados() {
     toast('❌ Erro ao excluir: ' + e.message, 'err');
   } finally { hideLoading(); }
 }
+async function entriesExcluirAntigosPorVencimento() {
+  const data = document.getElementById('ef-cutoff-venc').value;
+  if(!data) { toast('Selecione uma data.', 'err'); return; }
+  if(!confirm(`Excluir TODAS as entradas com vencimento anterior a ${formatarData(data)}? Esta ação é irreversível e afeta todo o Firebase, não só a lista filtrada.`)) return;
+  showLoading('Excluindo registros antigos...');
+  try {
+    const total = await STORAGE.deleteOlderThan('produtos_entrada', 'data_vencimento', data);
+    _allEntries = await STORAGE.get('produtos_entrada');
+    entriesRender();
+    toast(`✅ ${total} registro(s) vencido(s) excluído(s)!`);
+  } catch(e) {
+    toast('❌ Erro ao excluir: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+async function entriesExcluirAntigosPorCriacao() {
+  const data = document.getElementById('ef-cutoff-criado').value;
+  if(!data) { toast('Selecione uma data.', 'err'); return; }
+  if(!confirm(`Excluir TODAS as entradas criadas/importadas antes de ${formatarData(data)}? Esta ação é irreversível e afeta todo o Firebase, não só a lista filtrada.`)) return;
+  showLoading('Excluindo registros antigos...');
+  try {
+    const total = await STORAGE.deleteOlderThan('produtos_entrada', 'criado_em', data + 'T00:00:00.000Z');
+    _allEntries = await STORAGE.get('produtos_entrada');
+    entriesRender();
+    toast(`✅ ${total} registro(s) antigo(s) excluído(s)!`);
+  } catch(e) {
+    toast('❌ Erro ao excluir: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
 function entryEditar(id) {
   const item = _allEntries.find(x => x._id === id);
   if(!item) return;
@@ -1826,6 +1942,20 @@ async function saidasDeletarSelecionados() {
     toast('❌ Erro ao excluir: ' + e.message, 'err');
   } finally { hideLoading(); }
 }
+async function saidasExcluirAntigos() {
+  const data = document.getElementById('sf-cutoff-criado').value;
+  if(!data) { toast('Selecione uma data.', 'err'); return; }
+  if(!confirm(`Excluir TODAS as saídas criadas/importadas antes de ${formatarData(data)}? Esta ação é irreversível e afeta todo o Firebase, não só a lista filtrada.`)) return;
+  showLoading('Excluindo registros antigos...');
+  try {
+    const total = await STORAGE.deleteOlderThan('produtos_saida', 'criado_em', data + 'T00:00:00.000Z');
+    _allSaidas = await STORAGE.get('produtos_saida');
+    saidasRender();
+    toast(`✅ ${total} registro(s) antigo(s) excluído(s)!`);
+  } catch(e) {
+    toast('❌ Erro ao excluir: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
 function saidaEditar(id) {
   const item = _allSaidas.find(x => x._id === id);
   if(!item) return;
@@ -1892,6 +2022,20 @@ async function devolucoesDeletarSelecionados() {
     document.getElementById('cb-all-dev').checked = false;
     devolucoesRender();
     toast(`✅ ${selecionados.length} registro(s) excluído(s)!`);
+  } catch(e) {
+    toast('❌ Erro ao excluir: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+async function devolucoesExcluirAntigos() {
+  const data = document.getElementById('df-cutoff-criado').value;
+  if(!data) { toast('Selecione uma data.', 'err'); return; }
+  if(!confirm(`Excluir TODAS as devoluções criadas/importadas antes de ${formatarData(data)}? Esta ação é irreversível e afeta todo o Firebase, não só a lista filtrada.`)) return;
+  showLoading('Excluindo registros antigos...');
+  try {
+    const total = await STORAGE.deleteOlderThan('produtos_devolucao', 'criado_em', data + 'T00:00:00.000Z');
+    _allDevolucoes = await STORAGE.get('produtos_devolucao');
+    devolucoesRender();
+    toast(`✅ ${total} registro(s) antigo(s) excluído(s)!`);
   } catch(e) {
     toast('❌ Erro ao excluir: ' + e.message, 'err');
   } finally { hideLoading(); }
@@ -2939,6 +3083,151 @@ function devGerarPDF(orcamento, cliente, responsavel, motivo, complemento, agora
     <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
   </body></html>`);
   win.document.close();
+}
+
+// ════════════════════════════════════════════════════════
+// IMPORTAÇÃO DE DADOS LEGADOS (.db SQLite do sistema Python)
+// ════════════════════════════════════════════════════════
+let _sqlJsPromise = null;
+function carregarSqlJs() {
+  if (_sqlJsPromise) return _sqlJsPromise;
+  _sqlJsPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js';
+    script.onload = () => {
+      initSqlJs({ locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/${f}` })
+        .then(resolve).catch(reject);
+    };
+    script.onerror = () => reject(new Error('Não foi possível carregar a biblioteca de leitura .db (verifique sua conexão com a internet).'));
+    document.head.appendChild(script);
+  });
+  return _sqlJsPromise;
+}
+
+async function lerArquivoSQLite(file) {
+  const SQL = await carregarSqlJs();
+  const buf = await file.arrayBuffer();
+  const sqliteDb = new SQL.Database(new Uint8Array(buf));
+  try {
+    const tablesRes = sqliteDb.exec("SELECT name FROM sqlite_master WHERE type='table'");
+    if (!tablesRes.length || !tablesRes[0].values.length) throw new Error('Nenhuma tabela encontrada no arquivo.');
+    const tableName = tablesRes[0].values[0][0];
+    const dataRes = sqliteDb.exec(`SELECT * FROM ${tableName}`);
+    if (!dataRes.length) return { tableName, rows: [] };
+    const columns = dataRes[0].columns;
+    const rows = dataRes[0].values.map(row => {
+      const obj = {};
+      columns.forEach((col,i) => obj[col] = row[i]);
+      return obj;
+    });
+    return { tableName, rows };
+  } finally {
+    sqliteDb.close();
+  }
+}
+
+// Converte data "DD/MM/YY" ou "DD/MM/YYYY" → "YYYY-MM-DD"
+function converterDataBR(str) {
+  if (!str) return '';
+  const m = String(str).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+  if (!m) return '';
+  let [, d, mo, y] = m;
+  if (y.length === 2) y = '20' + y;
+  return `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;
+}
+// Converte "YYYY-MM-DD HH:MM:SS" → "YYYY-MM-DD"
+function converterDataISO(str) {
+  if (!str) return '';
+  const m = String(str).trim().match(/^(\d{4}-\d{2}-\d{2})/);
+  return m ? m[1] : '';
+}
+
+function iniciarImportacaoDb() {
+  const file = document.getElementById('import-db-file').files[0];
+  if (!file) { toast('Selecione um arquivo .db.', 'err'); return; }
+  processarImportacaoDb(file);
+}
+
+async function processarImportacaoDb(file) {
+  const statusEl = document.getElementById('import-db-status');
+  statusEl.textContent = 'Lendo arquivo...';
+  showLoading('Lendo arquivo .db...');
+  try {
+    const { tableName, rows } = await lerArquivoSQLite(file);
+    if (!rows.length) { toast('O arquivo não contém registros.', 'err'); statusEl.textContent = ''; return; }
+
+    let colecao, docs, descricao;
+    if (tableName === 'produtos_entrada') {
+      colecao = 'produtos_entrada';
+      descricao = 'Entradas (Rastreabilidade)';
+      docs = rows.map(r => {
+        const dataLanc = converterDataBR(r.data_lancamento);
+        return {
+          codigo: formatarCodigo(r.codigo),
+          nome: r.nome || '',
+          documento: formatarCodigo(r.documento),
+          quantidade: formatarCodigo(r.quantidade),
+          data_lancamento: dataLanc,
+          data_vencimento: converterDataISO(r.data_vencimento),
+          lote: r.lote || '',
+          legacy_import: true,
+          legacy_id: r.id,
+          criado_em: dataLanc ? `${dataLanc}T00:00:00.000Z` : '2020-01-01T00:00:00.000Z'
+        };
+      });
+    } else if (tableName === 'produtos_saida') {
+      colecao = 'produtos_saida';
+      descricao = 'Saídas (Comparador/Unidades)';
+      docs = rows.map(r => ({
+        nome: r.nome || '',
+        lote: r.lote || '',
+        documento: formatarCodigo(r.documento),
+        quantidade: formatarCodigo(r.quantidade),
+        legacy_import: true,
+        legacy_id: r.id,
+        criado_em: '2020-01-01T00:00:00.000Z'
+      }));
+    } else if (tableName === 'produtos_devolucao') {
+      colecao = 'produtos_devolucao';
+      descricao = 'Devoluções';
+      docs = rows.map(r => ({
+        nome: r.nome || '',
+        lote: r.lote || '',
+        documento: formatarCodigo(r.documento),
+        quantidade: formatarCodigo(r.quantidade),
+        cliente: '',
+        responsavel: '--',
+        motivo: 'Importação de dados legados',
+        complemento: '',
+        legacy_import: true,
+        legacy_id: r.id,
+        criado_em: '2020-01-01T00:00:00.000Z'
+      }));
+    } else {
+      hideLoading();
+      toast(`Tabela "${tableName}" não reconhecida. Use entrada.db, saida.db ou devolucao.db.`, 'err');
+      statusEl.textContent = '';
+      return;
+    }
+
+    hideLoading();
+    if (!confirm(`Arquivo identificado: ${descricao}\nForam encontrados ${docs.length} registro(s).\n\nImportar para o Firebase agora? Esta operação não pode ser desfeita automaticamente.`)) {
+      statusEl.textContent = '';
+      return;
+    }
+
+    showLoading(`Importando 0/${docs.length}...`);
+    await STORAGE.addBatch(colecao, docs, (done, total) => {
+      showLoading(`Importando... ${done}/${total}`);
+      statusEl.textContent = `Importando... ${done}/${total}`;
+    });
+    statusEl.textContent = `✅ ${docs.length} registro(s) importado(s) para ${descricao}!`;
+    toast(`✅ ${docs.length} registro(s) importado(s) com sucesso (${descricao})!`);
+    document.getElementById('import-db-file').value = '';
+  } catch(e) {
+    toast('❌ Erro ao importar: ' + e.message, 'err');
+    statusEl.textContent = '❌ ' + e.message;
+  } finally { hideLoading(); }
 }
 
 // Inicialização
