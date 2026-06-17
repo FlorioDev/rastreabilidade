@@ -1238,10 +1238,28 @@ function calcularValidadePorLote(loteClean) {
 // - YYYY-MM-DD (já no formato correto, possivelmente com horário)
 // - DD/MM/YYYY
 // - DD/MM/YY (ano de 2 dígitos, assume 20YY)
+// - número de série de data do Excel (ex.: 46004) — convertido automaticamente
 // Retorna '' se não conseguir interpretar.
 function normalizarDataParaISO(str) {
-  if (!str) return '';
+  if (str === null || str === undefined || str === '') return '';
   const s = String(str).trim();
+
+  // Número de série de data do Excel (dias desde 30/12/1899). Costuma aparecer
+  // quando a célula está formatada como data no Excel mas é lida como número puro.
+  if (/^\d{4,6}(\.\d+)?$/.test(s)) {
+    const serial = parseFloat(s);
+    if (serial > 1000 && serial < 100000) {
+      const epoch = new Date(Date.UTC(1899, 11, 30));
+      epoch.setUTCDate(epoch.getUTCDate() + Math.floor(serial));
+      if (!isNaN(epoch.getTime())) {
+        const y = epoch.getUTCFullYear();
+        const mo = String(epoch.getUTCMonth() + 1).padStart(2, '0');
+        const d = String(epoch.getUTCDate()).padStart(2, '0');
+        return `${y}-${mo}-${d}`;
+      }
+    }
+  }
+
   let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (m) return `${m[1]}-${m[2]}-${m[3]}`;
   m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
@@ -1251,6 +1269,19 @@ function normalizarDataParaISO(str) {
     return `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;
   }
   return '';
+}
+
+// Converte um valor lido de célula do Excel (pode vir como string, número de
+// série de data, ou objeto Date nativo do SheetJS) em texto utilizável.
+function _excelValorParaTexto(valor) {
+  if (valor === null || valor === undefined) return '';
+  if (valor instanceof Date) {
+    const y = valor.getFullYear();
+    const mo = String(valor.getMonth() + 1).padStart(2, '0');
+    const d = String(valor.getDate()).padStart(2, '0');
+    return `${y}-${mo}-${d}`;
+  }
+  return String(valor).trim();
 }
 
 // ============================================
@@ -1421,18 +1452,33 @@ function trackImportarPlanilha(input) {
       let count = 0;
       showLoading('Importando CSV...');
       try {
+        // Detecta automaticamente em qual linha começam os dados (mesma lógica do Excel)
+        let startRow = -1;
+        for (let i = 0; i < lines.length; i++) {
+          const cols = lines[i].split(delim);
+          if (cols.length >= 24 && cols[9]?.trim() && !isNaN(parseFloat(cols[9])) && cols[6]?.trim()) {
+            startRow = i;
+            break;
+          }
+        }
+        if (startRow === -1) {
+          toast('❌ Não foi possível identificar onde os dados começam no CSV. Verifique o formato das colunas.', 'err');
+          return;
+        }
         const promises = [];
-        for (let i = 2; i < lines.length; i++) {
+        for (let i = startRow; i < lines.length; i++) {
           const cols = lines[i].split(delim);
           if (cols.length < 24) continue;
           const lote = limparLote(cols[23]?.trim() || '');
+          const dataLancamentoRaw = cols[15]?.trim() || '';
+          const dataLancamento = normalizarDataParaISO(dataLancamentoRaw) || dataLancamentoRaw;
           const dataVencimento = normalizarDataParaISO(cols[21]?.trim() || '') || (cols[21]?.trim() || '');
           promises.push(STORAGE.add('produtos_entrada', {
             codigo:          formatarCodigo(cols[5]?.trim()),
             nome:            cols[6]?.trim() || '',
             documento:       formatarCodigo(cols[8]?.trim()),
             quantidade:      cols[9]?.trim() || '',
-            data_lancamento: cols[15]?.trim() || '',
+            data_lancamento: dataLancamento,
             data_vencimento: dataVencimento,
             lote:            lote,
             criado_em: new Date().toISOString(),
@@ -1469,19 +1515,37 @@ function trackLerExcel(file) {
     let count = 0;
     showLoading('Importando Excel...');
     try {
+      // Detecta automaticamente em qual linha começam os dados: procura a primeira
+      // linha com 24+ colunas cujo índice 9 (Quantidade) seja numérico — evita
+      // depender de um índice fixo, já que algumas planilhas têm cabeçalho duplo
+      // (título + cabeçalho) e outras têm apenas uma linha de cabeçalho.
+      let startRow = -1;
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
+        if (r && r.length >= 24 && r[9] !== undefined && r[9] !== '' && !isNaN(parseFloat(r[9])) && String(r[6] ?? '').trim()) {
+          startRow = i;
+          break;
+        }
+      }
+      if (startRow === -1) {
+        toast('❌ Não foi possível identificar onde os dados começam na planilha. Verifique o formato das colunas.', 'err');
+        return;
+      }
       const promises = [];
-      for (let i = 2; i < rows.length; i++) {
+      for (let i = startRow; i < rows.length; i++) {
         const r = rows[i];
         if (!r || r.length < 24) continue;
-        const lote = limparLote(String(r[23] ?? ''));
-        const dataVencimentoRaw = String(r[21] ?? '').trim();
+        const lote = limparLote(_excelValorParaTexto(r[23]));
+        const dataLancamentoRaw = _excelValorParaTexto(r[15]);
+        const dataLancamento = normalizarDataParaISO(dataLancamentoRaw) || dataLancamentoRaw;
+        const dataVencimentoRaw = _excelValorParaTexto(r[21]);
         const dataVencimento = normalizarDataParaISO(dataVencimentoRaw) || dataVencimentoRaw;
         promises.push(STORAGE.add('produtos_entrada', {
           codigo:          formatarCodigo(String(r[5] ?? '')),
           nome:            String(r[6] ?? ''),
           documento:       formatarCodigo(String(r[8] ?? '')),
           quantidade:      String(r[9] ?? ''),
-          data_lancamento: String(r[15] ?? ''),
+          data_lancamento: dataLancamento,
           data_vencimento: dataVencimento,
           lote:            lote,
           criado_em: new Date().toISOString(),
