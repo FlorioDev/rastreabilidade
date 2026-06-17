@@ -594,6 +594,12 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
       <div id="track-result" style="flex:1;overflow-y:auto;min-height:200px;">
         <span style="color:#a0aec0;">O resultado da busca aparecerá aqui...</span>
       </div>
+      <hr style="border:none;border-top:1px dashed #d0d8e8;margin:6px 0;">
+      <div class="panel-title" style="margin-top:0;">Resumo por Orçamento</div>
+      <div style="display:flex;gap:8px;">
+        <input id="t-pesq-orcamento" type="text" placeholder="Número do orçamento/NF..." style="flex:1;background:#f8fafc;border:1px solid #c8d0de;border-radius:7px;color:#1a1d23;padding:7px 10px;font-size:0.88rem;">
+        <button class="btn btn-orange" style="width:auto;padding:8px 18px;flex-shrink:0;" onclick="trackGerarPDFOrcamento()">🖨️ Resumo do Orçamento (PDF)</button>
+      </div>
     </div>
   </div>
 </div>
@@ -723,6 +729,21 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
     <div class="comp-actions" style="background:#fff;border:1px solid #d0d8e8;border-radius:10px;padding:12px;">
       <button class="btn btn-blue" onclick="unidFinalizarSalvar()">💾 Finalizar e Salvar</button>
       <button class="btn btn-red" onclick="unidLimparTudo()" style="margin-left:auto;">🗑 Limpar Todos os Dados</button>
+    </div>
+
+    <div class="dev-section-label">Ajuste de Dados do Sistema Antigo</div>
+    <div class="dev-card" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:0.8rem;color:#6b7a99;line-height:1.6;">
+        Use esta opção apenas para lançar manualmente <strong>planilhas de saída do sistema antigo (Python)</strong> que ainda não foram registradas.
+        O arquivo deve ter as colunas <strong>Produto, Lote, Orçamento, Quantidade</strong> (mesmo formato exportado pelo programa antigo).
+        Os valores de quantidade são lançados <strong>exatamente como estão na planilha, em unidades</strong>, sem conversão por caixa — esse lançamento não substitui nenhum outro processo de importação já existente, é apenas um ajuste pontual.
+      </div>
+      <div class="field-group">
+        <label>Planilha de Saída (.xlsx / .xls / .csv)</label>
+        <input id="unid-import-file" type="file" accept=".xlsx,.xls,.csv">
+      </div>
+      <div id="unid-import-status" style="font-size:0.82rem;color:#1a2a4a;font-weight:700;min-height:1.2em;"></div>
+      <button class="btn btn-orange" style="width:auto;padding:8px 22px;" onclick="unidImportarPlanilhaSaida()">📥 Lançar Planilha como Saída (Ajuste Legado)</button>
     </div>
   </div>
 </div>
@@ -948,6 +969,14 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
       <div id="saidas-count" style="margin-left:auto;"></div>
     </div>
     <div class="entries-filters">
+      <div class="field-group" style="max-width:170px;">
+        <label>Buscar período (data)</label>
+        <input id="sf-data-busca" type="date">
+      </div>
+      <button class="btn btn-blue" style="width:auto;padding:7px 18px;flex-shrink:0;align-self:flex-end;" onclick="saidasBuscarPorData()">🔍 Buscar Nesta Data</button>
+      <button class="btn btn-gray" style="width:auto;padding:7px 18px;flex-shrink:0;align-self:flex-end;" onclick="saidasBuscarTodos()">📋 Buscar Todos os Períodos</button>
+    </div>
+    <div class="entries-filters">
       <input id="sf-nome" type="text" placeholder="Filtrar por nome..." oninput="saidasRender()">
       <input id="sf-lote" type="text" placeholder="Filtrar por lote..." oninput="saidasRender()">
       <input id="sf-doc"  type="text" placeholder="Filtrar por orçamento..." oninput="saidasRender()">
@@ -979,6 +1008,14 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
     <div style="display:flex;align-items:center;gap:12px;">
       <div class="modal-title">🗃️ Gerenciar Devoluções Registradas</div>
       <div id="devolucoes-count" style="margin-left:auto;"></div>
+    </div>
+    <div class="entries-filters">
+      <div class="field-group" style="max-width:170px;">
+        <label>Buscar período (data)</label>
+        <input id="df-data-busca" type="date">
+      </div>
+      <button class="btn btn-blue" style="width:auto;padding:7px 18px;flex-shrink:0;align-self:flex-end;" onclick="devolucoesBuscarPorData()">🔍 Buscar Nesta Data</button>
+      <button class="btn btn-gray" style="width:auto;padding:7px 18px;flex-shrink:0;align-self:flex-end;" onclick="devolucoesBuscarTodos()">📋 Buscar Todos os Períodos</button>
     </div>
     <div class="entries-filters">
       <input id="df-nome" type="text" placeholder="Filtrar por nome..." oninput="devolucoesRender()">
@@ -1167,6 +1204,55 @@ function formatarCodigo(val) { return String(val ?? '').split('.')[0]; }
 function formatarData(str) { if(!str) return str; const m = str.match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${m[1]}` : str; }
 function cleanProductName(name) { return name.trim().replace(/\s+CX$/i, ''); }
 
+// Limpa o lote, mantendo apenas o padrão YYMM/DD no início e descartando
+// qualquer informação extra após dois ou mais espaços (ex.: "2606/03  DOC 8888" -> "2606/03")
+function limparLote(loteRaw) {
+  if (!loteRaw) return '';
+  const str = String(loteRaw).trim();
+  const m = str.match(/^(\d{4}\/\d{2})/);
+  if (m) return m[1];
+  return str.split(/\s{2,}/)[0].trim();
+}
+
+// Calcula a data de validade (YYYY-MM-DD) a partir de um lote no formato YYMM/DD
+// (YY = ano de fabricação, MM = mês, DD = dia), somando 180 dias de validade.
+// NOTA: o cálculo automático de validade pelo lote está mantido como utilitário,
+// mas não é mais aplicado automaticamente — a planilha já traz a data correta.
+function calcularValidadePorLote(loteClean) {
+  const m = String(loteClean ?? '').match(/^(\d{2})(\d{2})\/(\d{2})$/);
+  if (!m) return '';
+  const ano = 2000 + parseInt(m[1], 10);
+  const mes = parseInt(m[2], 10);
+  const dia = parseInt(m[3], 10);
+  if (mes < 1 || mes > 12 || dia < 1 || dia > 31) return '';
+  const dataFab = new Date(ano, mes - 1, dia);
+  if (isNaN(dataFab.getTime())) return '';
+  dataFab.setDate(dataFab.getDate() + 180);
+  const y = dataFab.getFullYear();
+  const mo = String(dataFab.getMonth() + 1).padStart(2, '0');
+  const d = String(dataFab.getDate()).padStart(2, '0');
+  return `${y}-${mo}-${d}`;
+}
+
+// Normaliza uma data de vencimento para o formato ISO (YYYY-MM-DD), aceitando:
+// - YYYY-MM-DD (já no formato correto, possivelmente com horário)
+// - DD/MM/YYYY
+// - DD/MM/YY (ano de 2 dígitos, assume 20YY)
+// Retorna '' se não conseguir interpretar.
+function normalizarDataParaISO(str) {
+  if (!str) return '';
+  const s = String(str).trim();
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
+  if (m) {
+    let [, d, mo, y] = m;
+    if (y.length === 2) y = '20' + y;
+    return `${y}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;
+  }
+  return '';
+}
+
 // ============================================
 // FIREBASE – inicialização segura (não bloqueia navegação)
 // ============================================
@@ -1256,6 +1342,17 @@ const STORAGE = {
     }
     return total;
   },
+  // Lê apenas os documentos cujo campo de data (ex.: 'criado_em') está dentro do
+  // intervalo [inicioISO, fimISO). Usado para reduzir leituras nos modais de
+  // "Gerenciar", que por padrão mostram só os registros de hoje.
+  async getByDateField(colecao, field, inicioISO, fimISO) {
+    if (!db) throw new Error('Firebase não disponível. Verifique sua conexão.');
+    const snap = await db.collection(colecao)
+      .where(field, '>=', inicioISO)
+      .where(field, '<', fimISO)
+      .get();
+    return snap.docs.map(d => ({ ...d.data(), _id: d.id }));
+  },
   async addBatch(colecao, docs, onProgress) {
     if (!db) throw new Error('Firebase não disponível. Verifique sua conexão.');
     const CHUNK = 450;
@@ -1287,14 +1384,16 @@ function hideLoading() {
 
 // RASTREABILIDADE
 async function trackSalvarEntrada() {
+  const lote = limparLote(document.getElementById('t-lote').value.trim());
+  const dataVencimento = document.getElementById('t-vencimento').value;
   const entrada = {
     codigo: document.getElementById('t-codigo').value.trim(),
     nome: document.getElementById('t-nome').value.trim(),
     documento: document.getElementById('t-documento').value.trim(),
     quantidade: document.getElementById('t-quantidade').value.trim(),
     data_lancamento: document.getElementById('t-lancamento').value,
-    data_vencimento: document.getElementById('t-vencimento').value,
-    lote: document.getElementById('t-lote').value.trim(),
+    data_vencimento: dataVencimento,
+    lote: lote,
     criado_em: new Date().toISOString()
   };
   if (!entrada.nome || !entrada.lote || !entrada.quantidade) {
@@ -1326,14 +1425,16 @@ function trackImportarPlanilha(input) {
         for (let i = 2; i < lines.length; i++) {
           const cols = lines[i].split(delim);
           if (cols.length < 24) continue;
+          const lote = limparLote(cols[23]?.trim() || '');
+          const dataVencimento = normalizarDataParaISO(cols[21]?.trim() || '') || (cols[21]?.trim() || '');
           promises.push(STORAGE.add('produtos_entrada', {
             codigo:          formatarCodigo(cols[5]?.trim()),
             nome:            cols[6]?.trim() || '',
             documento:       formatarCodigo(cols[8]?.trim()),
             quantidade:      cols[9]?.trim() || '',
             data_lancamento: cols[15]?.trim() || '',
-            data_vencimento: cols[21]?.trim() || '',
-            lote:            cols[23]?.trim() || '',
+            data_vencimento: dataVencimento,
+            lote:            lote,
             criado_em: new Date().toISOString(),
           }));
           count++;
@@ -1372,14 +1473,17 @@ function trackLerExcel(file) {
       for (let i = 2; i < rows.length; i++) {
         const r = rows[i];
         if (!r || r.length < 24) continue;
+        const lote = limparLote(String(r[23] ?? ''));
+        const dataVencimentoRaw = String(r[21] ?? '').trim();
+        const dataVencimento = normalizarDataParaISO(dataVencimentoRaw) || dataVencimentoRaw;
         promises.push(STORAGE.add('produtos_entrada', {
           codigo:          formatarCodigo(String(r[5] ?? '')),
           nome:            String(r[6] ?? ''),
           documento:       formatarCodigo(String(r[8] ?? '')),
           quantidade:      String(r[9] ?? ''),
           data_lancamento: String(r[15] ?? ''),
-          data_vencimento: String(r[21] ?? ''),
-          lote:            String(r[23] ?? ''),
+          data_vencimento: dataVencimento,
+          lote:            lote,
           criado_em: new Date().toISOString(),
         }));
         count++;
@@ -1394,18 +1498,32 @@ function trackLerExcel(file) {
 }
 
 async function trackAtualizarLista() {
-  const lote = document.getElementById('t-pesq-lote').value.toLowerCase();
+  const loteFiltro = document.getElementById('t-pesq-lote').value.trim().toLowerCase();
   const ac = document.getElementById('resumo-autocomplete');
-  if(!lote) { ac.style.display = 'none'; return; }
+  if(!loteFiltro) { ac.style.display = 'none'; return; }
   try {
     const todas = await STORAGE.get('produtos_entrada');
-    const nomes = [...new Set(todas.filter(e => e.lote.toLowerCase().includes(lote)).map(e => e.nome))].sort();
-    if(!nomes.length) { ac.style.display = 'none'; return; }
+    // Combina nome do produto + lote, removendo duplicatas (mesma combinação pode existir mais de uma vez)
+    const combosMap = new Map();
+    todas.forEach(e => {
+      const loteClean = limparLote(e.lote);
+      if (loteClean.toLowerCase().includes(loteFiltro)) {
+        const key = `${e.nome}||${loteClean}`;
+        if (!combosMap.has(key)) combosMap.set(key, { nome: e.nome, lote: loteClean });
+      }
+    });
+    const combos = [...combosMap.values()].sort((a,b) => a.nome.localeCompare(b.nome) || a.lote.localeCompare(b.lote));
+    if(!combos.length) { ac.style.display = 'none'; return; }
     ac.innerHTML = '';
-    nomes.forEach(n => {
+    combos.forEach(c => {
       const d = document.createElement('div');
-      d.textContent = n;
-      d.onclick = () => { document.getElementById('t-pesq-nome').value = n; ac.style.display = 'none'; };
+      d.innerHTML = `<strong>${c.nome}</strong> <span style="color:#6b7a99;font-weight:600;">— ${c.lote}</span>`;
+      d.onclick = () => {
+        document.getElementById('t-pesq-nome').value = c.nome;
+        document.getElementById('t-pesq-lote').value = c.lote;
+        ac.style.display = 'none';
+        trackBuscarResumo();
+      };
       ac.appendChild(d);
     });
     ac.style.display = 'block';
@@ -1421,12 +1539,15 @@ async function trackBuscarResumo() {
     const [todasEntradas, todasSaidas, todasDevolucoes] = await Promise.all([
       STORAGE.get('produtos_entrada'), STORAGE.get('produtos_saida'), STORAGE.get('produtos_devolucao')
     ]);
-    const entradas = todasEntradas.filter(e => e.nome === nome && e.lote === lote);
+    const loteClean = limparLote(lote);
+    // Busca por lote limpo para casar tanto registros novos quanto legados com sufixo
+    const entradas = todasEntradas.filter(e => e.nome === nome && limparLote(e.lote) === loteClean);
     if(!entradas.length) { toast('Produto ou lote não encontrado.', 'err'); return; }
     const entrada = entradas[0];
+    entrada.data_vencimento = normalizarDataParaISO(entrada.data_vencimento) || entrada.data_vencimento;
     const produzido = parseInt(entrada.quantidade) || 0;
-    const saidas = todasSaidas.filter(s => s.nome === nome && s.lote === lote);
-    const devolucoes = todasDevolucoes.filter(d => d.nome === nome && d.lote === lote);
+    const saidas = todasSaidas.filter(s => s.nome === nome && limparLote(s.lote) === loteClean);
+    const devolucoes = todasDevolucoes.filter(d => d.nome === nome && limparLote(d.lote) === loteClean);
     const totalSaida = saidas.reduce((a,s) => a + (parseInt(s.quantidade)||0), 0);
     const totalDev = devolucoes.reduce((a,d) => a + (parseInt(d.quantidade)||0), 0);
     const saldoAtual = produzido - totalSaida + totalDev;
@@ -1437,7 +1558,10 @@ async function trackBuscarResumo() {
     let html = `<table style="width:100%"><tr><td style="color:#6b7a99;">Código</td><td>${formatarCodigo(entrada.codigo)}</td></tr>
       <tr><td style="color:#6b7a99;">Produto</td><td><strong>${entrada.nome}</strong></td></tr>
       <tr><td style="color:#6b7a99;">Documento</td><td>${formatarCodigo(entrada.documento)}</td></tr>
-      <tr><td style="color:#6b7a99;">Lote</td><td>${entrada.lote}</td></tr></table>
+      <tr><td style="color:#6b7a99;">Lote</td><td>${loteClean}</td></tr>
+      <tr><td style="color:#6b7a99;">Lançamento</td><td>${formatarData(entrada.data_lancamento)||'—'}</td></tr>
+      <tr><td style="color:#6b7a99;">Vencimento</td><td>${formatarData(entrada.data_vencimento)||'—'}</td></tr>
+      </table>
       <hr><table><tr><td>Produzido:</td><td><strong>${produzido}</strong></td></tr>
       <tr><td>Total Saídas:</td><td><strong>${totalSaida}</strong></td></tr>
       <tr><td>Devoluções:</td><td><strong>${totalDev}</strong></td></tr>
@@ -1446,7 +1570,7 @@ async function trackBuscarResumo() {
     if(!saidas.length) html += `<div>Nenhuma saída registrada.</div>`;
     else { saidas.forEach(s => { const doc = formatarCodigo(s.documento); const qtd = parseInt(s.quantidade)||0; const dev = devPorDoc[doc]||0; html += `<div>Orç. ${doc}: ${qtd} UN${dev>0?` (Dev: ${dev})`:''}</div>`; }); }
     div.innerHTML = html;
-    trackResultData = { entrada, produzido, totalSaida, totalDev, saldoAtual, saidas, devPorDoc };
+    trackResultData = { entrada: {...entrada, lote: loteClean}, produzido, totalSaida, totalDev, saldoAtual, saidas, devPorDoc };
   } catch(e) {
     toast('❌ Erro ao buscar: ' + e.message, 'err');
   } finally { hideLoading(); }
@@ -1718,6 +1842,94 @@ function trackGerarPDF() {
   win.document.close();
 }
 
+// Busca todas as saídas (produtos_saida) lançadas para um determinado número de
+// orçamento/NF e gera um PDF A4 com a lista de produtos e lotes enviados.
+async function trackGerarPDFOrcamento() {
+  const orcamentoInput = document.getElementById('t-pesq-orcamento').value.trim();
+  if (!orcamentoInput) { toast('Informe o número do orçamento/NF.', 'err'); return; }
+  const orcamentoLimpo = formatarCodigo(orcamentoInput);
+
+  showLoading('Buscando itens do orçamento...');
+  try {
+    const todasSaidas = await STORAGE.get('produtos_saida');
+    const itens = todasSaidas.filter(s => formatarCodigo(s.documento) === orcamentoLimpo);
+
+    if (!itens.length) {
+      toast('Nenhuma saída encontrada para esse orçamento/NF.', 'err');
+      return;
+    }
+
+    itens.sort((a,b) => a.nome.localeCompare(b.nome) || a.lote.localeCompare(b.lote));
+    const totalUnidades = itens.reduce((a,i) => a + (parseInt(i.quantidade)||0), 0);
+
+    const agora = new Date();
+    const dataFmt = agora.toLocaleDateString('pt-BR');
+    const horaFmt = agora.toLocaleTimeString('pt-BR');
+
+    const linhas = itens.map((item, i) => `<tr class="${i%2?'alt':''}">
+      <td>${item.nome}</td>
+      <td class="num">${limparLote(item.lote)}</td>
+      <td class="num"><strong>${item.quantidade}</strong></td>
+    </tr>`).join('');
+
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+    <title>Resumo do Orçamento ${orcamentoLimpo}</title>
+    <style>
+      @page { size: A4; margin: 14mm 16mm; }
+      * { box-sizing: border-box; }
+      body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1d23; font-size: 11px; line-height: 1.5; margin: 0; }
+      .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #b7791f; padding-bottom: 10px; margin-bottom: 16px; page-break-after: avoid; }
+      .header .brand .logo { font-size: 22px; font-weight: 900; letter-spacing: 3px; color: #1a2a4a; }
+      .header .brand .sub { font-size: 10px; color: #6b7a99; text-transform: uppercase; letter-spacing: 1.5px; margin-top: 2px; }
+      .header .meta { text-align: right; font-size: 10px; color: #6b7a99; }
+      .header .meta .title { font-size: 15px; font-weight: 800; color: #1a2a4a; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .5px; }
+      .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; page-break-inside: avoid; }
+      .summary-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px 12px; text-align: center; border-top: 4px solid #b7791f; }
+      .summary-card .label { font-size: 8.5px; font-weight: 800; color: #6b7a99; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 4px; }
+      .summary-card .value { font-size: 20px; font-weight: 900; color: #1a2a4a; }
+      table { width: 100%; border-collapse: collapse; page-break-inside: auto; }
+      thead { display: table-header-group; }
+      tfoot { display: table-footer-group; }
+      tr { page-break-inside: avoid; page-break-after: auto; }
+      thead th { background: #b7791f; color: #fff; font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; padding: 7px 10px; text-align: left; }
+      thead th.num, td.num { text-align: center; }
+      tbody td { padding: 6px 10px; border-bottom: 1px solid #eef1f7; font-size: 10.5px; }
+      tbody tr.alt { background: #f8fafc; }
+      tfoot td { padding: 7px 10px; font-weight: 800; font-size: 10.5px; border-top: 2px solid #1a2a4a; background: #f8fafc; }
+      .footer { margin-top: 22px; padding-top: 8px; border-top: 1px solid #e2e8f0; font-size: 9px; color: #a0aec0; }
+      .print-btn { display: block; margin: 20px auto 0; padding: 10px 28px; background: #b7791f; color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+      @media print { .print-btn { display: none; } }
+    </style></head><body>
+      <div class="header">
+        <div class="brand">
+          <div class="logo">LNP</div>
+          <div class="sub">Sistema de Controle de Estoque</div>
+        </div>
+        <div class="meta">
+          <div class="title">Resumo do Orçamento</div>
+          <div>Emitido em ${dataFmt} às ${horaFmt}</div>
+          <div>Orçamento/NF: <strong style="color:#1a2a4a;">${orcamentoLimpo}</strong></div>
+        </div>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-card"><div class="label">Itens / Lotes</div><div class="value">${itens.length}</div></div>
+        <div class="summary-card"><div class="label">Total de Unidades</div><div class="value">${totalUnidades}</div></div>
+      </div>
+      <table>
+        <thead><tr><th>Produto</th><th class="num">Lote</th><th class="num">Quantidade</th></tr></thead>
+        <tbody>${linhas}</tbody>
+        <tfoot><tr><td colspan="2">TOTAL</td><td class="num">${totalUnidades}</td></tr></tfoot>
+      </table>
+      <div class="footer">Documento gerado automaticamente pelo Sistema LNP em ${dataFmt} ${horaFmt}.</div>
+      <button class="print-btn" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+    </body></html>`);
+    win.document.close();
+  } catch(e) {
+    toast('❌ Erro ao buscar orçamento: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+
 async function trackAbrirGerenciar() {
   showLoading('Carregando entradas...');
   try {
@@ -1771,7 +1983,7 @@ async function entriesExcluirAntigosPorVencimento() {
   showLoading('Excluindo registros antigos...');
   try {
     const total = await STORAGE.deleteOlderThan('produtos_entrada', 'data_vencimento', data);
-    _allEntries = await STORAGE.get('produtos_entrada');
+    _allEntries = _allEntries.filter(e => !(e.data_vencimento && e.data_vencimento < data));
     entriesRender();
     toast(`✅ ${total} registro(s) vencido(s) excluído(s)!`);
   } catch(e) {
@@ -1785,7 +1997,7 @@ async function entriesExcluirAntigosPorCriacao() {
   showLoading('Excluindo registros antigos...');
   try {
     const total = await STORAGE.deleteOlderThan('produtos_entrada', 'criado_em', data + 'T00:00:00.000Z');
-    _allEntries = await STORAGE.get('produtos_entrada');
+    _allEntries = _allEntries.filter(e => !(e.criado_em && e.criado_em < data + 'T00:00:00.000Z'));
     entriesRender();
     toast(`✅ ${total} registro(s) antigo(s) excluído(s)!`);
   } catch(e) {
@@ -1811,8 +2023,52 @@ function entryEditar(id) {
     onSave: (novosValores) => {
       Object.assign(item, novosValores);
       entriesRender();
-    }
+    },
+    extraButtons: [
+      {
+        label: '📅 Aplicar Vencimento a Todo o Lote',
+        className: 'btn-orange',
+        onClick: () => aplicarVencimentoAoLote(item)
+      }
+    ]
   });
+}
+
+// Aplica a data de vencimento do campo de edição atual a TODOS os registros
+// de produtos_entrada que tenham o mesmo número de lote (após limparLote),
+// independentemente do produto — útil para corrigir um lote de fabricação inteiro de uma vez.
+async function aplicarVencimentoAoLote(item) {
+  const loteAtual = limparLote(document.getElementById('edit-field-lote').value.trim());
+  const novaValidade = document.getElementById('edit-field-data_vencimento').value;
+  if (!loteAtual) { toast('Informe o lote antes de aplicar em massa.', 'err'); return; }
+  if (!novaValidade) { toast('Informe a data de vencimento antes de aplicar em massa.', 'err'); return; }
+
+  showLoading('Verificando registros com o mesmo lote...');
+  try {
+    const todas = await STORAGE.get('produtos_entrada');
+    const afetados = todas.filter(e => limparLote(e.lote) === loteAtual);
+    if (!afetados.length) { toast('Nenhum registro encontrado com esse lote.', 'err'); hideLoading(); return; }
+
+    hideLoading();
+    if (!confirm(`Foram encontrados ${afetados.length} registro(s) com o lote "${loteAtual}" (de qualquer produto).\n\nDeseja aplicar a validade ${formatarData(novaValidade)} a TODOS eles?`)) return;
+
+    showLoading(`Atualizando ${afetados.length} registro(s)...`);
+    const CHUNK = 450;
+    for (let i = 0; i < afetados.length; i += CHUNK) {
+      const chunk = afetados.slice(i, i + CHUNK);
+      const batch = db.batch();
+      chunk.forEach(e => batch.update(db.collection('produtos_entrada').doc(e._id), { data_vencimento: novaValidade }));
+      await batch.commit();
+    }
+
+    // Atualiza também a lista local já carregada no modal de gerenciamento, se aplicável
+    _allEntries.forEach(e => { if (limparLote(e.lote) === loteAtual) e.data_vencimento = novaValidade; });
+    if (document.getElementById('modal-entradas').classList.contains('open')) entriesRender();
+
+    toast(`✅ Vencimento aplicado a ${afetados.length} registro(s) do lote ${loteAtual}!`);
+  } catch(e) {
+    toast('❌ Erro ao aplicar em massa: ' + e.message, 'err');
+  } finally { hideLoading(); }
 }
 
 // ════════════════════════════════════════════════════════
@@ -1897,10 +2153,27 @@ function toggleAllCb(checked, cls) { document.querySelectorAll('.'+cls).forEach(
 // GERENCIAR SAÍDAS (produtos_saida)
 // ════════════════════════════════════════════════════════
 let _allSaidas = [];
+// Retorna [inicioISO, fimISO) para o dia informado (yyyy-mm-dd), usado para
+// restringir leituras do Firestore ao período desejado.
+function _intervaloDoDia(diaYMD) {
+  const inicio = `${diaYMD}T00:00:00.000Z`;
+  const fimDate = new Date(diaYMD + 'T00:00:00Z');
+  fimDate.setUTCDate(fimDate.getUTCDate() + 1);
+  const fim = fimDate.toISOString();
+  return [inicio, fim];
+}
+function _hojeYMD() {
+  const hoje = new Date();
+  return `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}-${String(hoje.getDate()).padStart(2,'0')}`;
+}
+
 async function abrirModalSaidas() {
-  showLoading('Carregando saídas...');
+  showLoading('Carregando saídas de hoje...');
   try {
-    _allSaidas = await STORAGE.get('produtos_saida');
+    const hoje = _hojeYMD();
+    document.getElementById('sf-data-busca').value = hoje;
+    const [inicio, fim] = _intervaloDoDia(hoje);
+    _allSaidas = await STORAGE.getByDateField('produtos_saida', 'criado_em', inicio, fim);
     document.getElementById('sf-nome').value = '';
     document.getElementById('sf-lote').value = '';
     document.getElementById('sf-doc').value = '';
@@ -1911,6 +2184,32 @@ async function abrirModalSaidas() {
     toast('❌ Erro ao carregar: ' + e.message, 'err');
   } finally { hideLoading(); }
 }
+async function saidasBuscarPorData() {
+  const dia = document.getElementById('sf-data-busca').value;
+  if (!dia) { toast('Selecione uma data.', 'err'); return; }
+  showLoading('Buscando saídas da data selecionada...');
+  try {
+    const [inicio, fim] = _intervaloDoDia(dia);
+    _allSaidas = await STORAGE.getByDateField('produtos_saida', 'criado_em', inicio, fim);
+    document.getElementById('cb-all-saidas').checked = false;
+    saidasRender();
+    toast(`✅ ${_allSaidas.length} registro(s) encontrado(s) em ${formatarData(dia)}.`);
+  } catch(e) {
+    toast('❌ Erro ao buscar: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+async function saidasBuscarTodos() {
+  if (!confirm('Isso vai carregar TODOS os registros de saída já gravados, o que pode gerar um número alto de leituras no Firebase. Deseja continuar?')) return;
+  showLoading('Carregando todos os períodos...');
+  try {
+    _allSaidas = await STORAGE.get('produtos_saida');
+    document.getElementById('cb-all-saidas').checked = false;
+    saidasRender();
+    toast(`✅ ${_allSaidas.length} registro(s) carregado(s) (todos os períodos).`);
+  } catch(e) {
+    toast('❌ Erro ao buscar: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
 function saidasRender() {
   const fNome = document.getElementById('sf-nome').value.toLowerCase();
   const fLote = document.getElementById('sf-lote').value.toLowerCase();
@@ -1918,7 +2217,7 @@ function saidasRender() {
   const filtrados = _allSaidas.filter(e => (!fNome || (e.nome||'').toLowerCase().includes(fNome)) && (!fLote || (e.lote||'').toLowerCase().includes(fLote)) && (!fDoc || (e.documento||'').toLowerCase().includes(fDoc)));
   document.getElementById('saidas-count').textContent = `${filtrados.length} de ${_allSaidas.length} registros`;
   const tb = document.getElementById('tbody-saidas');
-  if(!filtrados.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#a0aec0;padding:20px;">Nenhum registro.</td></tr>'; return; }
+  if(!filtrados.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#a0aec0;padding:20px;">Nenhum registro neste período. Use a busca por data acima para ver outros dias.</td></tr>'; return; }
   tb.innerHTML = filtrados.map((e,i) => `<tr${i%2?' style="background:#fafbfd;"':''}>
     <td class="td-center"><input type="checkbox" class="cb-saida" data-id="${e._id}" style="cursor:pointer;width:15px;height:15px;"></td>
     <td>${e.nome||'—'}</td><td>${e.lote||'—'}</td><td>${formatarCodigo(e.documento)}</td>
@@ -1949,7 +2248,8 @@ async function saidasExcluirAntigos() {
   showLoading('Excluindo registros antigos...');
   try {
     const total = await STORAGE.deleteOlderThan('produtos_saida', 'criado_em', data + 'T00:00:00.000Z');
-    _allSaidas = await STORAGE.get('produtos_saida');
+    // Remove localmente os que foram excluídos, sem recarregar tudo do Firebase
+    _allSaidas = _allSaidas.filter(e => !(e.criado_em && e.criado_em < data + 'T00:00:00.000Z'));
     saidasRender();
     toast(`✅ ${total} registro(s) antigo(s) excluído(s)!`);
   } catch(e) {
@@ -1983,9 +2283,12 @@ function saidaEditar(id) {
 // ════════════════════════════════════════════════════════
 let _allDevolucoes = [];
 async function abrirModalDevolucoes() {
-  showLoading('Carregando devoluções...');
+  showLoading('Carregando devoluções de hoje...');
   try {
-    _allDevolucoes = await STORAGE.get('produtos_devolucao');
+    const hoje = _hojeYMD();
+    document.getElementById('df-data-busca').value = hoje;
+    const [inicio, fim] = _intervaloDoDia(hoje);
+    _allDevolucoes = await STORAGE.getByDateField('produtos_devolucao', 'criado_em', inicio, fim);
     document.getElementById('df-nome').value = '';
     document.getElementById('df-lote').value = '';
     document.getElementById('df-doc').value = '';
@@ -1996,6 +2299,32 @@ async function abrirModalDevolucoes() {
     toast('❌ Erro ao carregar: ' + e.message, 'err');
   } finally { hideLoading(); }
 }
+async function devolucoesBuscarPorData() {
+  const dia = document.getElementById('df-data-busca').value;
+  if (!dia) { toast('Selecione uma data.', 'err'); return; }
+  showLoading('Buscando devoluções da data selecionada...');
+  try {
+    const [inicio, fim] = _intervaloDoDia(dia);
+    _allDevolucoes = await STORAGE.getByDateField('produtos_devolucao', 'criado_em', inicio, fim);
+    document.getElementById('cb-all-dev').checked = false;
+    devolucoesRender();
+    toast(`✅ ${_allDevolucoes.length} registro(s) encontrado(s) em ${formatarData(dia)}.`);
+  } catch(e) {
+    toast('❌ Erro ao buscar: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+async function devolucoesBuscarTodos() {
+  if (!confirm('Isso vai carregar TODOS os registros de devolução já gravados, o que pode gerar um número alto de leituras no Firebase. Deseja continuar?')) return;
+  showLoading('Carregando todos os períodos...');
+  try {
+    _allDevolucoes = await STORAGE.get('produtos_devolucao');
+    document.getElementById('cb-all-dev').checked = false;
+    devolucoesRender();
+    toast(`✅ ${_allDevolucoes.length} registro(s) carregado(s) (todos os períodos).`);
+  } catch(e) {
+    toast('❌ Erro ao buscar: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
 function devolucoesRender() {
   const fNome = document.getElementById('df-nome').value.toLowerCase();
   const fLote = document.getElementById('df-lote').value.toLowerCase();
@@ -2003,7 +2332,7 @@ function devolucoesRender() {
   const filtrados = _allDevolucoes.filter(e => (!fNome || (e.nome||'').toLowerCase().includes(fNome)) && (!fLote || (e.lote||'').toLowerCase().includes(fLote)) && (!fDoc || (e.documento||'').toLowerCase().includes(fDoc)));
   document.getElementById('devolucoes-count').textContent = `${filtrados.length} de ${_allDevolucoes.length} registros`;
   const tb = document.getElementById('tbody-devolucoes');
-  if(!filtrados.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#a0aec0;padding:20px;">Nenhum registro.</td></tr>'; return; }
+  if(!filtrados.length) { tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#a0aec0;padding:20px;">Nenhum registro neste período. Use a busca por data acima para ver outros dias.</td></tr>'; return; }
   tb.innerHTML = filtrados.map((e,i) => `<tr${i%2?' style="background:#fafbfd;"':''}>
     <td class="td-center"><input type="checkbox" class="cb-dev" data-id="${e._id}" style="cursor:pointer;width:15px;height:15px;"></td>
     <td>${e.nome||'—'}</td><td>${e.lote||'—'}</td><td>${formatarCodigo(e.documento)}</td>
@@ -2033,7 +2362,7 @@ async function devolucoesExcluirAntigos() {
   showLoading('Excluindo registros antigos...');
   try {
     const total = await STORAGE.deleteOlderThan('produtos_devolucao', 'criado_em', data + 'T00:00:00.000Z');
-    _allDevolucoes = await STORAGE.get('produtos_devolucao');
+    _allDevolucoes = _allDevolucoes.filter(e => !(e.criado_em && e.criado_em < data + 'T00:00:00.000Z'));
     devolucoesRender();
     toast(`✅ ${total} registro(s) antigo(s) excluído(s)!`);
   } catch(e) {
@@ -2239,7 +2568,7 @@ function compProcessarCaixas() {
     if(!linha) return;
     const partes = linha.split(/\s{2,}/);
     if(partes.length >= 2) {
-      const produto = cleanProductName(partes[0]), lote = partes[1].trim();
+      const produto = cleanProductName(partes[0]), lote = limparLote(partes[1]);
       const found = produtosCaixas.find(p => p.Produto === produto && p.Lote === lote);
       if(found) found.Quantidade++;
       else produtosCaixas.push({ Produto: produto, Lote: lote, Quantidade: 1 });
@@ -2329,7 +2658,7 @@ function compProcessarModalMulti() {
     if(!linha) return;
     const partes = linha.split(/\s{2,}/);
     if(partes.length >= 2) {
-      const produto = cleanProductName(partes[0]), lote = partes[1].trim();
+      const produto = cleanProductName(partes[0]), lote = limparLote(partes[1]);
       const found = produtosCaixas.find(p => p.Produto === produto && p.Lote === lote);
       if(found) found.Quantidade++;
       else produtosCaixas.push({ Produto: produto, Lote: lote, Quantidade: 1 });
@@ -2341,7 +2670,7 @@ function compProcessarModalMulti() {
 }
 function compSalvarModal() {
   const produto = document.getElementById('modal-produto').value.trim();
-  const lote = document.getElementById('modal-lote').value.trim();
+  const lote = limparLote(document.getElementById('modal-lote').value.trim());
   const quantidade = parseInt(document.getElementById('modal-quantidade').value) || 1;
   if(!produto || !lote) { toast('Produto e Lote obrigatórios.', 'err'); return; }
   if(_modalEditIdx !== null) produtosCaixas[_modalEditIdx] = { Produto: produto, Quantidade: quantidade, Lote: lote };
@@ -2366,7 +2695,7 @@ function unidProcessarItens() {
     if(!linha) return;
     const partes = linha.split(/\s{2,}/);
     if(partes.length >= 2) {
-      const produto = cleanProductName(partes[0]), lote = partes[1].trim();
+      const produto = cleanProductName(partes[0]), lote = limparLote(partes[1]);
       const found = produtosUnidades.find(p => p.Produto === produto && p.Lote === lote);
       if(found) found.Quantidade++;
       else produtosUnidades.push({ Produto: produto, Lote: lote, Quantidade: 1 });
@@ -2416,7 +2745,7 @@ function unidProcessarModalMulti() {
     if(!linha) return;
     const partes = linha.split(/\s{2,}/);
     if(partes.length >= 2) {
-      const produto = cleanProductName(partes[0]), lote = partes[1].trim();
+      const produto = cleanProductName(partes[0]), lote = limparLote(partes[1]);
       const found = produtosUnidades.find(p => p.Produto === produto && p.Lote === lote);
       if(found) found.Quantidade++;
       else produtosUnidades.push({ Produto: produto, Lote: lote, Quantidade: 1 });
@@ -2428,7 +2757,7 @@ function unidProcessarModalMulti() {
 }
 function unidSalvarModal() {
   const produto = document.getElementById('modal-unidade-produto').value.trim();
-  const lote = document.getElementById('modal-unidade-lote').value.trim();
+  const lote = limparLote(document.getElementById('modal-unidade-lote').value.trim());
   const quantidade = parseInt(document.getElementById('modal-unidade-quantidade').value) || 1;
   if(!produto || !lote) { toast('Produto e Lote obrigatórios.', 'err'); return; }
   if(_unidModalEditIdx !== null) {
@@ -2473,6 +2802,118 @@ function unidLimparTudo(silent=false) {
   if(!silent) toast('Dados limpos.');
 }
 
+// Lançamento de ajuste: importa planilha de saída no formato do sistema antigo
+// (colunas Produto, Lote, Orçamento, Quantidade) e grava direto em produtos_saida,
+// em unidades, sem conversão por caixa. Não substitui nenhum outro processo de importação.
+async function unidImportarPlanilhaSaida() {
+  const file = document.getElementById('unid-import-file').files[0];
+  const statusEl = document.getElementById('unid-import-status');
+  if (!file) { toast('Selecione uma planilha.', 'err'); return; }
+
+  const processarLinhas = async (linhas) => {
+    if (!linhas.length) { toast('A planilha não contém registros.', 'err'); statusEl.textContent = ''; return; }
+    if (!confirm(`Foram encontrados ${linhas.length} registro(s) na planilha.\n\nLançar como saída (ajuste de dados do sistema antigo) agora? Esta operação não pode ser desfeita automaticamente.`)) {
+      statusEl.textContent = ''; return;
+    }
+    showLoading(`Lançando 0/${linhas.length}...`);
+    try {
+      const docs = linhas.map(l => ({
+        nome: l.produto,
+        lote: limparLote(l.lote),
+        documento: formatarCodigo(l.orcamento),
+        quantidade: formatarCodigo(l.quantidade),
+        legacy_import: true,
+        ajuste_manual: true,
+        criado_em: new Date().toISOString(),
+      }));
+      await STORAGE.addBatch('produtos_saida', docs, (done, total) => {
+        showLoading(`Lançando... ${done}/${total}`);
+        statusEl.textContent = `Lançando... ${done}/${total}`;
+      });
+      statusEl.textContent = `✅ ${docs.length} saída(s) lançada(s) com sucesso!`;
+      toast(`✅ ${docs.length} saída(s) lançada(s) como ajuste de dados do sistema antigo!`);
+      document.getElementById('unid-import-file').value = '';
+    } catch(e) {
+      toast('❌ Erro ao lançar: ' + e.message, 'err');
+      statusEl.textContent = '❌ ' + e.message;
+    } finally { hideLoading(); }
+  };
+
+  // Acha o índice da coluna pelo nome do cabeçalho (aceita variações de maiúsculas/acentos)
+  const acharColuna = (headers, ...nomes) => {
+    const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+    const alvo = nomes.map(norm);
+    for (let i = 0; i < headers.length; i++) {
+      if (alvo.includes(norm(headers[i]))) return i;
+    }
+    return -1;
+  };
+
+  if (file.name.toLowerCase().endsWith('.csv')) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const linhasTxt = e.target.result.split('\n').filter(l => l.trim());
+      if (!linhasTxt.length) { toast('Arquivo CSV vazio.', 'err'); return; }
+      const delim = linhasTxt[0].includes(';') ? ';' : ',';
+      const headers = linhasTxt[0].split(delim).map(h => h.trim());
+      const iProd = acharColuna(headers, 'Produto', 'Nome');
+      const iLote = acharColuna(headers, 'Lote');
+      const iOrc  = acharColuna(headers, 'Orcamento', 'Orçamento', 'Documento', 'NF');
+      const iQtd  = acharColuna(headers, 'Quantidade', 'Qtd');
+      if (iProd < 0 || iLote < 0 || iQtd < 0) { toast('Colunas obrigatórias não encontradas (Produto, Lote, Quantidade).', 'err'); return; }
+      const linhas = [];
+      for (let i = 1; i < linhasTxt.length; i++) {
+        const cols = linhasTxt[i].split(delim);
+        const produto = cols[iProd]?.trim();
+        if (!produto) continue;
+        linhas.push({
+          produto, lote: cols[iLote]?.trim() || '',
+          orcamento: iOrc >= 0 ? (cols[iOrc]?.trim() || '') : '',
+          quantidade: cols[iQtd]?.trim() || '0',
+        });
+      }
+      processarLinhas(linhas);
+    };
+    reader.readAsText(file, 'UTF-8');
+  } else {
+    const lerComXLSX = () => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        if (!rows.length) { toast('Planilha vazia.', 'err'); return; }
+        const headers = rows[0].map(h => String(h ?? '').trim());
+        const iProd = acharColuna(headers, 'Produto', 'Nome');
+        const iLote = acharColuna(headers, 'Lote');
+        const iOrc  = acharColuna(headers, 'Orcamento', 'Orçamento', 'Documento', 'NF');
+        const iQtd  = acharColuna(headers, 'Quantidade', 'Qtd');
+        if (iProd < 0 || iLote < 0 || iQtd < 0) { toast('Colunas obrigatórias não encontradas (Produto, Lote, Quantidade).', 'err'); return; }
+        const linhas = [];
+        for (let i = 1; i < rows.length; i++) {
+          const r = rows[i];
+          if (!r || !r[iProd]) continue;
+          linhas.push({
+            produto: String(r[iProd]).trim(), lote: String(r[iLote] ?? '').trim(),
+            orcamento: iOrc >= 0 ? String(r[iOrc] ?? '').trim() : '',
+            quantidade: String(r[iQtd] ?? '0').trim(),
+          });
+        }
+        processarLinhas(linhas);
+      };
+      reader.readAsArrayBuffer(file);
+    };
+    if (!window.XLSX) {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload = lerComXLSX;
+      document.head.appendChild(s);
+    } else {
+      lerComXLSX();
+    }
+  }
+}
+
 // ════════════════════════════════════════════════════════
 // MÓDULO – ESTOQUE & VALIDADE
 // ════════════════════════════════════════════════════════
@@ -2485,18 +2926,28 @@ async function stockCarregar() {
       STORAGE.get('produtos_entrada'), STORAGE.get('produtos_saida'), STORAGE.get('produtos_devolucao')
     ]);
 
-    // Agrupa entradas por nome+lote (soma quantidades caso existam várias entradas do mesmo lote)
+    if (!entradas.length) {
+      toast('⚠️ Nenhuma entrada encontrada no Firebase (coleção produtos_entrada vazia ou inacessível).', 'err');
+      _stockData = [];
+      stockRender();
+      return;
+    }
+
+    // Agrupa entradas por nome (normalizado) + lote
+    const normNome = n => String(n||'').trim().toUpperCase();
     const grupos = {};
     entradas.forEach(e => {
-      const key = `${e.nome}||${e.lote}`;
+      const loteClean = limparLote(e.lote);
+      const nomeNorm = normNome(e.nome);
+      const key = `${nomeNorm}||${loteClean}`;
       if (!grupos[key]) {
         grupos[key] = {
-          nome: e.nome, lote: e.lote, codigo: e.codigo,
+          nome: e.nome, lote: loteClean, codigo: e.codigo,
           produzido: 0, data_vencimento: e.data_vencimento
         };
       }
       grupos[key].produzido += parseInt(e.quantidade) || 0;
-      // Mantém a data de vencimento mais antiga registrada (caso haja divergência entre entradas)
+      // Mantém a data de vencimento mais antiga (conservador)
       if (e.data_vencimento && (!grupos[key].data_vencimento || e.data_vencimento < grupos[key].data_vencimento)) {
         grupos[key].data_vencimento = e.data_vencimento;
       }
@@ -2505,25 +2956,36 @@ async function stockCarregar() {
 
     const hoje = new Date(); hoje.setHours(0,0,0,0);
 
-    _stockData = Object.values(grupos).map(g => {
-      const totalSaida = saidas.filter(s => s.nome === g.nome && s.lote === g.lote)
+    const todosOsGrupos = Object.values(grupos).map(g => {
+      const totalSaida = saidas.filter(s => limparLote(s.lote) === g.lote && normNome(s.nome) === normNome(g.nome))
         .reduce((a,s) => a + (parseInt(s.quantidade)||0), 0);
-      const totalDev = devolucoes.filter(d => d.nome === g.nome && d.lote === g.lote)
+      const totalDev = devolucoes.filter(d => limparLote(d.lote) === g.lote && normNome(d.nome) === normNome(g.nome))
         .reduce((a,d) => a + (parseInt(d.quantidade)||0), 0);
       const saldo = g.produzido - totalSaida + totalDev;
 
+      const vencISO = normalizarDataParaISO(g.data_vencimento);
       let diasParaVencer = null;
-      if (g.data_vencimento) {
-        const venc = new Date(g.data_vencimento + 'T00:00:00');
-        diasParaVencer = Math.round((venc - hoje) / 86400000);
+      if (vencISO) {
+        const venc = new Date(vencISO + 'T00:00:00');
+        if (!isNaN(venc.getTime())) {
+          diasParaVencer = Math.round((venc - hoje) / 86400000);
+        }
       }
-      return { ...g, saldo, diasParaVencer };
-    }).filter(item => item.saldo > 0); // só exibe o que ainda há em estoque
+      return { ...g, saldo, data_vencimento: vencISO || g.data_vencimento, diasParaVencer };
+    });
+
+    _stockData = todosOsGrupos.filter(item => item.saldo > 0);
+
+    if (!_stockData.length && todosOsGrupos.length) {
+      toast(`⚠️ ${todosOsGrupos.length} lote(s) encontrados, mas todos com saldo zero ou negativo (saídas ≥ entradas). Verifique se há duplicidade de lançamentos.`, 'err');
+    } else {
+      toast(`✅ Estoque atualizado — ${_stockData.length} lote(s) com saldo positivo.`);
+    }
 
     stockRender();
-    toast(`✅ Estoque atualizado — ${_stockData.length} lote(s) com saldo positivo.`);
   } catch(e) {
     toast('❌ Erro ao carregar: ' + e.message, 'err');
+    console.error('Erro stockCarregar:', e);
   } finally { hideLoading(); }
 }
 
@@ -2799,7 +3261,7 @@ function devProcessarScan() {
   if(!orcamento) { toast('Informe o orçamento/NF.', 'err'); return; }
   const partes = scanText.split(/\s{2,}/);
   if(partes.length < 2) { toast('Formato inválido. Use: PRODUTO  LOTE', 'err'); return; }
-  const produto = partes[0].trim(), lote = partes[1].trim();
+  const produto = cleanProductName(partes[0]), lote = limparLote(partes[1]);
   const existing = devScanData.find(i => i.Produto === produto && i.Lote === lote && i['Orçamento/NF'] === orcamento);
   if(existing) existing.Quantidade++;
   else devScanData.push({ Produto: produto, Lote: lote, 'Orçamento/NF': orcamento, Quantidade: 1 });
