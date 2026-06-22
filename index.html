@@ -928,7 +928,21 @@ tbody td { padding: 8px 12px; vertical-align: middle; }
   <div class="modal-box" style="width:820px;">
     <div style="display:flex;align-items:center;gap:12px;">
       <div class="modal-title">🗃️ Gerenciar Entradas Cadastradas</div>
-      <div id="entries-count" style="margin-left:auto;"></div>
+      <div id="entries-count" style="margin-left:auto;font-size:0.78rem;color:#6b7a99;font-weight:700;"></div>
+    </div>
+    <!-- Faixa de busca manual (só lê o Firebase quando clicado) -->
+    <div class="entries-filters" style="background:#f0f5ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px;">
+      <span style="font-size:0.76rem;font-weight:800;color:#1558b0;text-transform:uppercase;letter-spacing:.5px;width:100%;margin-bottom:2px;">🔍 Buscar no banco</span>
+      <div class="field-group" style="flex:1;min-width:140px;">
+        <label>Por Lote</label>
+        <input id="ef-busca-lote" type="text" placeholder="Ex: 2606/17">
+      </div>
+      <div class="field-group" style="max-width:170px;">
+        <label>Por data de importação</label>
+        <input id="ef-busca-data" type="date">
+      </div>
+      <button class="btn btn-blue" style="width:auto;padding:7px 18px;flex-shrink:0;align-self:flex-end;" onclick="entriesBuscarNoFirebase()">🔍 Buscar</button>
+      <button class="btn btn-gray" style="width:auto;padding:7px 18px;flex-shrink:0;align-self:flex-end;" title="Cuidado: carrega todo o banco" onclick="entriesBuscarTodos()">📋 Todos</button>
     </div>
     <div class="entries-filters">
       <input id="ef-nome" type="text" placeholder="Filtrar por nome..." oninput="entriesRender()">
@@ -1465,7 +1479,7 @@ function trackImportarPlanilha(input) {
           toast('❌ Não foi possível identificar onde os dados começam no CSV. Verifique o formato das colunas.', 'err');
           return;
         }
-        const promises = [];
+        const registrosImportados = [];
         for (let i = startRow; i < lines.length; i++) {
           const cols = lines[i].split(delim);
           if (cols.length < 24) continue;
@@ -1473,7 +1487,8 @@ function trackImportarPlanilha(input) {
           const dataLancamentoRaw = cols[15]?.trim() || '';
           const dataLancamento = normalizarDataParaISO(dataLancamentoRaw) || dataLancamentoRaw;
           const dataVencimento = normalizarDataParaISO(cols[21]?.trim() || '') || (cols[21]?.trim() || '');
-          promises.push(STORAGE.add('produtos_entrada', {
+          registrosImportados.push({
+            _id: null,
             codigo:          formatarCodigo(cols[5]?.trim()),
             nome:            cols[6]?.trim() || '',
             documento:       formatarCodigo(cols[8]?.trim()),
@@ -1482,11 +1497,17 @@ function trackImportarPlanilha(input) {
             data_vencimento: dataVencimento,
             lote:            lote,
             criado_em: new Date().toISOString(),
-          }));
+          });
           count++;
         }
-        await Promise.all(promises);
+        // Salva e captura o ID real retornado pelo Firestore para cada registro,
+        // garantindo que editar/excluir funcione imediatamente após a importação.
+        await Promise.all(registrosImportados.map(async (registro) => {
+          registro._id = await STORAGE.add('produtos_entrada', registro);
+        }));
+        _lastImportedEntries = registrosImportados;
         toast(`✅ ${count} registros importados do CSV!`);
+        trackAbrirGerenciar();
       } catch(err) {
         toast('❌ Erro ao importar: ' + err.message, 'err');
       } finally { hideLoading(); }
@@ -1531,7 +1552,7 @@ function trackLerExcel(file) {
         toast('❌ Não foi possível identificar onde os dados começam na planilha. Verifique o formato das colunas.', 'err');
         return;
       }
-      const promises = [];
+      const registrosImportados = [];
       for (let i = startRow; i < rows.length; i++) {
         const r = rows[i];
         if (!r || r.length < 24) continue;
@@ -1540,20 +1561,27 @@ function trackLerExcel(file) {
         const dataLancamento = normalizarDataParaISO(dataLancamentoRaw) || dataLancamentoRaw;
         const dataVencimentoRaw = _excelValorParaTexto(r[21]);
         const dataVencimento = normalizarDataParaISO(dataVencimentoRaw) || dataVencimentoRaw;
-        promises.push(STORAGE.add('produtos_entrada', {
+        registrosImportados.push({
+          _id: null,
           codigo:          formatarCodigo(String(r[5] ?? '')),
           nome:            String(r[6] ?? ''),
           documento:       formatarCodigo(String(r[8] ?? '')),
           quantidade:      String(r[9] ?? ''),
           data_lancamento: dataLancamento,
           data_vencimento: dataVencimento,
-          lote:            lote,
+          lote,
           criado_em: new Date().toISOString(),
-        }));
+        });
         count++;
       }
-      await Promise.all(promises);
+      // Salva e captura o ID real retornado pelo Firestore para cada registro,
+      // garantindo que editar/excluir funcione imediatamente após a importação.
+      await Promise.all(registrosImportados.map(async (registro) => {
+        registro._id = await STORAGE.add('produtos_entrada', registro);
+      }));
+      _lastImportedEntries = registrosImportados;
       toast(`✅ ${count} registros importados do Excel!`);
+      trackAbrirGerenciar();
     } catch(err) {
       toast('❌ Erro ao importar: ' + err.message, 'err');
     } finally { hideLoading(); }
@@ -1994,20 +2022,90 @@ async function trackGerarPDFOrcamento() {
   } finally { hideLoading(); }
 }
 
-async function trackAbrirGerenciar() {
-  showLoading('Carregando entradas...');
+// Registros carregados para o modal de entradas (pode vir de importação ou de busca)
+let _lastImportedEntries = null; // guarda o que foi importado por último
+
+function trackAbrirGerenciar() {
+  // Limpa filtros
+  document.getElementById('ef-nome').value = '';
+  document.getElementById('ef-lote').value = '';
+  document.getElementById('ef-doc').value = '';
+  document.getElementById('ef-busca-lote').value = '';
+  document.getElementById('ef-busca-data').value = _hojeYMD();
+  document.getElementById('cb-all').checked = false;
+
+  if (_lastImportedEntries && _lastImportedEntries.length > 0) {
+    // Abre direto com os registros da importação recente — zero leitura extra
+    _allEntries = _lastImportedEntries;
+    _lastImportedEntries = null; // consumido
+    document.getElementById('entries-count').textContent =
+      `${_allEntries.length} registro(s) — importados agora`;
+    entriesRender();
+  } else {
+    // Sem importação recente: mostra tela vazia pedindo busca
+    _allEntries = [];
+    const tb = document.getElementById('tbody-entries');
+    tb.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#a0aec0;padding:28px;">Use o campo de busca acima para localizar registros específicos, ou "Todos" para carregar o banco completo.</td></tr>';
+    document.getElementById('entries-count').textContent = '';
+  }
+  document.getElementById('modal-entradas').classList.add('open');
+}
+
+async function entriesBuscarNoFirebase() {
+  const lote = document.getElementById('ef-busca-lote').value.trim();
+  const data = document.getElementById('ef-busca-data').value;
+
+  if (!lote && !data) { toast('Informe um lote ou uma data para buscar.', 'err'); return; }
+
+  showLoading('Buscando entradas...');
+  try {
+    let resultados = [];
+    if (data) {
+      const [inicio, fim] = _intervaloDoDia(data);
+      resultados = await STORAGE.getByDateField('produtos_entrada', 'criado_em', inicio, fim);
+    } else {
+      // Busca por lote: usa getByDateField? Não — lote não tem índice. Buscamos
+      // com query where diretamente pelo lote limpo.
+      if (!db) throw new Error('Firebase não disponível.');
+      const snap = await db.collection('produtos_entrada')
+        .where('lote', '==', limparLote(lote))
+        .get();
+      resultados = snap.docs.map(d => ({ ...d.data(), _id: d.id }));
+      // Também tenta o lote sem limpar, por compatibilidade com registros legados
+      if (!resultados.length && lote !== limparLote(lote)) {
+        const snap2 = await db.collection('produtos_entrada').where('lote', '==', lote).get();
+        resultados = snap2.docs.map(d => ({ ...d.data(), _id: d.id }));
+      }
+    }
+    _allEntries = resultados;
+    document.getElementById('cb-all').checked = false;
+    document.getElementById('ef-nome').value = '';
+    document.getElementById('ef-lote').value = lote;
+    document.getElementById('ef-doc').value = '';
+    entriesRender();
+    if (!resultados.length) toast('Nenhum registro encontrado para essa busca.', 'err');
+    else toast(`✅ ${resultados.length} registro(s) encontrado(s).`);
+  } catch(e) {
+    toast('❌ Erro ao buscar: ' + e.message, 'err');
+  } finally { hideLoading(); }
+}
+
+async function entriesBuscarTodos() {
+  if (!confirm('Isso vai carregar TODOS os registros de entrada já gravados, o que pode gerar um número alto de leituras no Firebase. Deseja continuar?')) return;
+  showLoading('Carregando todos os registros...');
   try {
     _allEntries = await STORAGE.get('produtos_entrada');
+    document.getElementById('cb-all').checked = false;
     document.getElementById('ef-nome').value = '';
     document.getElementById('ef-lote').value = '';
     document.getElementById('ef-doc').value = '';
-    document.getElementById('cb-all').checked = false;
     entriesRender();
-    document.getElementById('modal-entradas').classList.add('open');
+    toast(`✅ ${_allEntries.length} registro(s) carregado(s) (todos os períodos).`);
   } catch(e) {
     toast('❌ Erro ao carregar: ' + e.message, 'err');
   } finally { hideLoading(); }
 }
+
 function entriesRender() {
   const fNome = document.getElementById('ef-nome').value.toLowerCase();
   const fLote = document.getElementById('ef-lote').value.toLowerCase();
@@ -2682,11 +2780,12 @@ async function compFinalizarSalvar() {
   if(!compOrcamento) { toast('Nenhum número de orçamento.', 'err'); return; }
   showLoading('Salvando saídas no Firebase...');
   try {
-    await Promise.all(produtosCaixas.map(p => {
+    const registros = produtosCaixas.map(p => {
       const mult = getMultiplicador(p.Produto);
       const unidades = p.Quantidade * mult;
-      return STORAGE.add('produtos_saida', { nome: p.Produto, lote: p.Lote, documento: compOrcamento, quantidade: String(unidades), caixas: p.Quantidade, multiplicador: mult, criado_em: new Date().toISOString() });
-    }));
+      return { _id: null, nome: p.Produto, lote: p.Lote, documento: compOrcamento, quantidade: String(unidades), caixas: p.Quantidade, multiplicador: mult, criado_em: new Date().toISOString() };
+    });
+    await Promise.all(registros.map(async (r) => { r._id = await STORAGE.add('produtos_saida', r); }));
     let csv = 'Produto,Lote,Orçamento,Caixas,Multiplicador,Quantidade(Unidades)\n';
     produtosCaixas.forEach(p => { const mult = getMultiplicador(p.Produto); csv += `"${p.Produto}","${p.Lote}","${compOrcamento}","${p.Quantidade}","${mult}","${p.Quantidade * mult}"\n`; });
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -2695,6 +2794,14 @@ async function compFinalizarSalvar() {
     a.download = `Orcamento_${compOrcamento}_${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
     toast(`✅ Orçamento ${compOrcamento} salvo no Firebase (convertido em unidades) e exportado!`);
+    // Abre modal de saídas mostrando só o que foi salvo agora — zero leitura extra
+    _allSaidas = registros;
+    document.getElementById('sf-nome').value = '';
+    document.getElementById('sf-lote').value = '';
+    document.getElementById('sf-doc').value = compOrcamento;
+    document.getElementById('cb-all-saidas').checked = false;
+    saidasRender();
+    document.getElementById('modal-saidas').classList.add('open');
     compLimparTudo(true);
   } catch(e) {
     toast('❌ Erro ao salvar: ' + e.message, 'err');
@@ -2841,9 +2948,13 @@ async function unidFinalizarSalvar() {
   if(!orcamento) { toast('Informe o número do orçamento/NF.', 'err'); return; }
   showLoading('Salvando saídas no Firebase...');
   try {
-    await Promise.all(produtosUnidades.map(p =>
-      STORAGE.add('produtos_saida', { nome: p.Produto, lote: p.Lote, documento: orcamento, quantidade: String(p.Quantidade), criado_em: new Date().toISOString() })
-    ));
+    const registros = produtosUnidades.map(p => ({
+      _id: null,
+      nome: p.Produto, lote: p.Lote,
+      documento: orcamento, quantidade: String(p.Quantidade),
+      criado_em: new Date().toISOString()
+    }));
+    await Promise.all(registros.map(async (r) => { r._id = await STORAGE.add('produtos_saida', r); }));
     let csv = 'Produto,Lote,Orçamento,Quantidade(Unidades)\n';
     produtosUnidades.forEach(p => { csv += `"${p.Produto}","${p.Lote}","${orcamento}","${p.Quantidade}"\n`; });
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -2852,6 +2963,14 @@ async function unidFinalizarSalvar() {
     a.download = `Orcamento_${orcamento}_${new Date().toISOString().slice(0,10)}_unidades.csv`;
     a.click();
     toast(`✅ Orçamento ${orcamento} salvo no Firebase (em unidades) e exportado!`);
+    // Abre modal de saídas mostrando só o que foi salvo agora — zero leitura extra
+    _allSaidas = registros;
+    document.getElementById('sf-nome').value = '';
+    document.getElementById('sf-lote').value = '';
+    document.getElementById('sf-doc').value = orcamento;
+    document.getElementById('cb-all-saidas').checked = false;
+    saidasRender();
+    document.getElementById('modal-saidas').classList.add('open');
     unidLimparTudo(true);
   } catch(e) {
     toast('❌ Erro ao salvar: ' + e.message, 'err');
@@ -3376,9 +3495,23 @@ async function devFinalizar() {
   const itensSalvar = [...devScanData];
   showLoading('Salvando devolução no Firebase...');
   try {
-    await Promise.all(itensSalvar.map(item => STORAGE.add('produtos_devolucao', { nome: item.Produto, lote: item.Lote, documento: item['Orçamento/NF'], quantidade: String(item.Quantidade), cliente, responsavel, motivo, complemento, criado_em: new Date().toISOString() })));
+    const registros = itensSalvar.map(item => ({
+      _id: null,
+      nome: item.Produto, lote: item.Lote, documento: item['Orçamento/NF'],
+      quantidade: String(item.Quantidade), cliente, responsavel, motivo, complemento,
+      criado_em: new Date().toISOString()
+    }));
+    await Promise.all(registros.map(async (r) => { r._id = await STORAGE.add('produtos_devolucao', r); }));
     devGerarPDF(orcamento, cliente, responsavel, motivo, complemento, agora, itensSalvar);
     toast('✅ Devolução registrada no Firebase!');
+    // Abre modal de devoluções mostrando só o que foi salvo agora — zero leitura extra
+    _allDevolucoes = registros;
+    document.getElementById('df-nome').value = '';
+    document.getElementById('df-lote').value = '';
+    document.getElementById('df-doc').value = '';
+    document.getElementById('cb-all-dev').checked = false;
+    devolucoesRender();
+    document.getElementById('modal-devolucoes').classList.add('open');
     devLimpar();
   } catch(e) {
     toast('❌ Erro ao salvar: ' + e.message, 'err');
